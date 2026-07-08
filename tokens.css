@@ -1,0 +1,78 @@
+/* ==============================================================================
+   ANAM'S ROAD TO NEUROSURGEON — DESIGN TOKENS
+   Theme: "Clinician"  ·  credible-medical, warm, aspirational (not childish)
+   --------------------------------------------------------------------------
+   SINGLE SOURCE OF TRUTH for colour, type, spacing, elevation.
+   Loaded first; index.html maps its legacy vars (--pink, --ink…) to these,
+   so every component already flows from this file. Edit the system HERE.
+
+   For Claude Design onboarding: this file + design-system.md fully describe
+   the visual language. Change a token here and the whole app follows.
+   ============================================================================== */
+:root{
+
+  /* ---- BRAND / CORE ------------------------------------------------------ */
+  --c-primary:      #12796a;  /* teal-emerald — primary actions, "you are here", key accents */
+  --c-primary-deep: #0c5c50;  /* darker teal — gradients, pressed, hard deadlines           */
+  --c-primary-soft: #3fa08c;  /* lighter teal — gradient light-end, hovers                  */
+  --c-pine:         #14504a;  /* deepest teal — rare deep accents                           */
+  --c-brass:        #b8894e;  /* warm brass — secondary accent, "targets", human warmth     */
+  --c-brass-light:  #bfa063;  /* champagne — summit / reward moments                        */
+
+  /* ---- NEUTRALS · TEXT · SURFACES --------------------------------------- */
+  --c-ink:          #26302c;  /* warm charcoal — primary text & display headings */
+  --c-ink-soft:     #6f7d77;  /* muted sage-grey — secondary text, captions      */
+  --c-canvas:       #f4ece8;  /* warm ivory — app background                     */
+  --c-surface:      #ffffff;  /* cards & panels                                  */
+  --c-surface-tint: #edf6f2;  /* pale mint — noteboxes, quiet fills              */
+  --c-hairline:     #dbe4df;  /* dividers, faint outlines                        */
+  --c-glass:        rgba(255,251,250,.82); /* frosted chrome (title, hud, nav)   */
+  --c-glass-border: rgba(255,255,255,.6);
+
+  /* ---- STATUS · SEMANTIC (radar chips, notes) --------------------------- */
+  --c-success:  #0f9d6c;  /* "DO NOW" / on-track            */
+  --c-info:     #5658d8;  /* "APPLY" / neutral info         */
+  --c-warn:     #b8894e;  /* "STRETCH" / caution            */
+  --c-danger:   #b0454e;  /* "SKIP" / medical red (= 3D cross) */
+  --c-critical: #0c5c50;  /* hard, unmissable deadlines     */
+  --c-muted:    #8a7d84;  /* "WATCH" / deferred             */
+
+  /* ---- 3D JOURNEY ASCENT (mirrored in the JS PALETTE object in index.html) */
+  --stage-1:  #6fa598;  /* Freshman  — soft sage-teal      */
+  --stage-2:  #12796a;  /* Sophomore — primary teal (current) */
+  --stage-3:  #2f7d6b;  /* Junior    — deep teal           */
+  --stage-4:  #3d7d8f;  /* MCAT      — slate-teal          */
+  --stage-5:  #4a6f9a;  /* Fork      — slate-blue          */
+  --stage-6:  #5658d8;  /* Apply     — indigo              */
+  --stage-7:  #2f7d8a;  /* Med M1–M2 — teal               */
+  --stage-8:  #0f9d6c;  /* Med M3–M4 — emerald            */
+  --stage-9:  #b8894e;  /* Residency — brass              */
+  --stage-10: #bfa063;  /* Attending — champagne summit    */
+  --summit-gold: #bfa063;
+  --cross-red:   #b0454e;
+  --sky-top: #7f97a8; --sky-mid: #bcd0cb; --sky-bot: #eee4d4; /* dusk gradient */
+
+  /* ---- TYPOGRAPHY ------------------------------------------------------- */
+  --font-display: 'Fraunces', Georgia, serif;       /* editorial serif — TITLES & section heads ONLY */
+  --font-ui:      'Manrope', system-ui, sans-serif; /* clean sans — body, controls, labels, numbers  */
+  --text-xs:11px; --text-sm:12.5px; --text-md:14px; --text-lg:16px;
+  --text-xl:19px; --text-2xl:22px; --text-3xl:26px; --text-hero:30px;
+  --w-body:600; --w-semi:700; --w-bold:800;
+  --leading:1.45; --tracking-tight:-.01em;
+
+  /* ---- RADII ------------------------------------------------------------ */
+  --r-sm:8px; --r-md:12px; --r-lg:15px; --r-xl:20px; --r-2xl:24px; --r-pill:999px;
+
+  /* ---- SPACING ---------------------------------------------------------- */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:22px; --space-6:32px;
+
+  /* ---- ELEVATION (teal-grey, tuned to theme) ---------------------------- */
+  --shadow-sm:   0 4px 12px rgba(40,110,95,.10);
+  --shadow-md:   0 6px 16px rgba(40,110,95,.14);
+  --shadow-lg:   0 14px 36px rgba(40,110,95,.18);
+  --shadow-panel:0 24px 60px rgba(30,95,84,.30);
+  --glow-primary:0 6px 16px rgba(18,110,96,.45);
+
+  /* ---- Z-INDEX SCALE ---------------------------------------------------- */
+  --z-scene:1; --z-vignette:8; --z-labels:10; --z-ui:20; --z-panel:30; --z-modal:40; --z-loader:60;
+}

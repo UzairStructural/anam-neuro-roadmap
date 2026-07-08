@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Anam's Master Plan · The Written Path to Neurosurgeon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--pink:#ff5fa2;--pink-d:#e23e86;--ink:#5a2a4d;--ink2:#9a6a86;--teal:#0f9d6c;--blue:#5658d8;--gold:#f59331}
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#ffe9f4,#ffe0ee 300px,#fff5fa 900px);color:var(--ink);
+    font-family:'Quicksand',system-ui,sans-serif;font-weight:600;line-height:1.5}
+  .fh{font-family:'Baloo 2',cursive}
+  .wrap{max-width:880px;margin:0 auto;padding:26px 20px 80px}
+  header.hero{background:linear-gradient(135deg,#ff8fbf,#ff5fa2);border-radius:26px;color:#fff;padding:26px 28px;
+    box-shadow:0 18px 44px rgba(255,95,162,.35);position:relative;overflow:hidden}
+  header.hero h1{font-family:'Baloo 2';margin:0 0 4px;font-size:30px;line-height:1.1}
+  header.hero p{margin:0;font-weight:700;opacity:.95}
+  .strip{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .strip .s{background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.5);border-radius:13px;
+    padding:6px 12px;font-size:12.5px;font-weight:800}
+  .printbtn{position:absolute;top:18px;right:18px;border:none;cursor:pointer;background:#fff;color:var(--pink-d);
+    font-family:'Baloo 2';font-weight:800;font-size:13px;padding:9px 14px;border-radius:13px;box-shadow:0 6px 14px rgba(0,0,0,.15)}
+  .toc{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 6px}
+  .toc a{text-decoration:none;color:var(--pink-d);background:#fff;border:1.5px solid #ffd0e4;border-radius:12px;
+    padding:6px 12px;font-size:12.5px;font-weight:800}
+  h2.sec{font-family:'Baloo 2';font-size:23px;margin:38px 0 6px;color:var(--pink-d);scroll-margin-top:20px}
+  h2.sec .n{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,#ff8fbf,#ff5fa2);
+    color:#fff;font-size:15px;margin-right:9px;transform:translateY(-2px)}
+  p.lead{margin:0 0 14px;color:var(--ink2)}
+  .card{background:#fff;border-radius:18px;padding:18px 20px;box-shadow:0 8px 24px rgba(200,100,150,.12);margin-bottom:14px}
+  .card h3{font-family:'Baloo 2';margin:0 0 4px;font-size:17px}
+  .card h3 .tag{font-size:11px;font-weight:800;color:#fff;border-radius:9px;padding:3px 9px;margin-left:8px;vertical-align:2px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  ul.t{margin:8px 0 0;padding:0;list-style:none}
+  ul.t li{padding:4px 0 4px 24px;position:relative;font-size:13.5px}
+  ul.t li:before{content:"✓";position:absolute;left:2px;color:var(--teal);font-weight:800}
+  ul.t.dot li:before{content:"•";color:var(--pink);font-size:18px;line-height:1;top:3px}
+  ul.t.warn li:before{content:"⚠";color:#e67e22;font-size:12px}
+  .mini{font-size:11.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--ink2);margin:10px 0 3px}
+  table{width:100%;border-collapse:separate;border-spacing:0 7px;font-size:13px}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink2);padding:0 12px}
+  td{background:#fff;padding:10px 12px;vertical-align:top;box-shadow:0 4px 12px rgba(200,100,150,.08)}
+  tr td:first-child{border-radius:12px 0 0 12px;font-weight:800}
+  tr td:last-child{border-radius:0 12px 12px 0}
+  tr.hot td{background:#fff0f7;outline:1.5px solid #ffb7d8}
+  .chip{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:9px;color:#fff;white-space:nowrap}
+  .note{background:#fff4fa;border-left:4px solid var(--pink);border-radius:12px;padding:11px 14px;font-size:13px;margin:12px 0}
+  .note.green{background:#eefaf4;border-color:var(--teal);color:#177a55}
+  .note.red{background:#fdeef0;border-color:#ec5c7d;color:#b03a48}
+  .tmpl{background:#faf7ff;border:1.5px dashed #cbb8f0;border-radius:14px;padding:13px 15px;font-size:12.5px;margin:10px 0;white-space:pre-wrap}
+  .term{border-left:5px solid var(--pink);padding-left:0;position:relative}
+  .term .when{font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#fff;
+    background:linear-gradient(135deg,#ff8fbf,#ff5fa2);display:inline-block;border-radius:9px;padding:3px 10px;margin-bottom:6px}
+  footer{margin-top:44px;font-size:12px;color:var(--ink2);text-align:center}
+  @media print{
+    body{background:#fff}.printbtn,.toc{display:none}
+    .card,td{box-shadow:none;border:1px solid #f0d6e6}
+    header.hero{box-shadow:none}
+    h2.sec{page-break-after:avoid}.card{page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <button class="printbtn" onclick="window.print()">🖨️ Print / Save PDF</button>
+  <h1>🧠 Anam's Master Plan</h1>
+  <p>The complete written path — Thomas Jefferson University → tuition-free med school → neurosurgery.</p>
+  <div class="strip">
+    <span class="s">B.S. Biology '29 · TJU</span><span class="s">GPA 3.07 → rescue to 3.6+</span>
+    <span class="s">CCMA ✓ already earned</span><span class="s">MCAT target 515+</span>
+    <span class="s">Step 2 CK target 250+</span><span class="s">Attending ~2041</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#rules">Golden Rules</a><a href="#path">Semester Path</a><a href="#courses">Cushion Courses</a>
+  <a href="#earn">Earning Map</a><a href="#schol">Scholarships</a><a href="#intern">Internship Board</a>
+  <a href="#shadow">Shadowing & Letters</a><a href="#targets">Target Board</a><a href="#week">Weekly Rhythm</a>
+</nav>
+
+<h2 class="sec" id="rules"><span class="n">1</span>The Five Golden Rules</h2>
+<div class="card"><ul class="t">
+  <li><b>GPA is a movie, not a photo.</b> A 3.07 start with a 3.8–3.9 finish reads as "she figured it out." Every remaining semester is a scene in that movie — protect it above everything else on this page.</li>
+  <li><b>The neurosurgery race resets in med school.</b> Undergrad GPA gets her <i>in the door</i>; after that, research volume + Step 2 CK + neurosurgeon letters decide the match. So the undergrad mission is simply: strong finish, 515+ MCAT, get in — ideally free.</li>
+  <li><b>Get paid for hours she'd need anyway.</b> Her CCMA means clinical hours = income, not volunteering. Stack paid-and-counts activities (clinic job, scribe, TA, paid research summers) over unpaid time sinks.</li>
+  <li><b>Deadlines are strategy.</b> Almost every door on this list opens in a narrow Nov–Feb window each year. The blitz calendar below is half the value of this plan.</li>
+  <li><b>The cheapest strong acceptance wins.</b> Debt-free through a 7-year residency is a superpower. Apply to every tuition-free school; treat merit money as negotiable.</li>
+</ul></div>
+
+<h2 class="sec" id="path"><span class="n">2</span>The Semester-by-Semester Path</h2>
+<p class="lead">Required courses follow TJU's pre-med sequence; "cushion" items are the extras that put her <i>above</i> target. GPA goal every term: <b>3.8–3.9</b>.</p>
+
+<div class="card term"><span class="when">RIGHT NOW · Summer 2026</span>
+  <ul class="t">
+    <li>Set up the CCMA job hunt: resume + apply to Jefferson Health outpatient clinics, urgent cares, and dermatology/cardiology offices (they love MAs). Target start: September, 6–10 hrs/wk.</li>
+    <li>Draft the "lab email" (template in §7) and shortlist 5 PIs: TJU biology dept, Farber Institute for Neuroscience, Jefferson neurosurgery research faculty pages.</li>
+    <li>Free Python basics (Coursera "Python for Everybody" or freeCodeCamp) — 30 min/day habit.</li>
+    <li>Book fall advising: ask about (1) SKMC IDeA / any TJU→SKMC linkage, (2) research-for-credit options, (3) tutoring-center job.</li>
+  </ul></div>
+
+<div class="card term"><span class="when">Fall 2026 · Sophomore I — the proof semester</span>
+  <div class="grid2">
+    <div><div class="mini">Courses (14–16 cr)</div><ul class="t dot">
+      <li>Organic Chemistry I + Lab</li><li>Anatomy &amp; Physiology I</li><li>Biostatistics</li><li>Intro Psychology</li>
+      <li><b>Cushion:</b> 1-credit research/independent study if a lab says yes</li></ul></div>
+    <div><div class="mini">Everything else</div><ul class="t">
+      <li>Start CCMA clinic job (~8 hr/wk ≈ $650+/mo)</li>
+      <li>Join ONE lab (3–4 hr/wk) — stay for years, not months</li>
+      <li><b>Oct 1: FAFSA + PA State Grant renewal</b> (every year!)</li>
+      <li>Nov–Dec: write CRISSP / SHPEP / NIH SIP / SR-EIP essays over winter break</li>
+      <li>Dean's List (3.5+) → screenshot it; it feeds scholarship apps</li></ul></div>
+  </div>
+  <div class="note green"><b>Checkpoint:</b> 3.85 this term moves cum GPA 3.07 → ~3.33. Amgen-eligible (3.2), SR-EIP-eligible (3.0 ✓ already).</div></div>
+
+<div class="card term"><span class="when">Spring 2027 · Sophomore II — the application blitz</span>
+  <div class="grid2">
+    <div><div class="mini">Courses</div><ul class="t dot">
+      <li>Organic Chemistry II + Lab</li><li>Anatomy &amp; Physiology II</li><li>Intro Sociology</li>
+      <li><b>Cushion:</b> Neuroscience elective (or Penn/Drexel cross-registration if TJU lacks one)</li></ul></div>
+    <div><div class="mini">Deadlines (set alarms NOW)</div><ul class="t">
+      <li>Early Jan: <b>CHOP CRISSP</b> ($5,000 + free housing)</li>
+      <li>Feb 1: <b>Amgen Scholars</b> (needs 3.2 cum)</li>
+      <li>~Feb 3: <b>SR-EIP</b> (paid research summer; 3.0+ ✓)</li>
+      <li>Feb 5: <b>SHPEP</b> (free + $1,000 — LAST eligible year)</li>
+      <li>Mid-Feb: <b>NIH SIP</b> (NINDS labs, ~$2,300/mo)</li>
+      <li>Keep job + lab; add 2 hr/wk volunteering (hospice or free clinic)</li></ul></div>
+  </div></div>
+
+<div class="card term"><span class="when">Summer 2027 · first research summer</span>
+  <ul class="t">
+    <li>Take the best paid offer: CRISSP / NIH SIP / Amgen / SR-EIP. Fallback: full-time-ish CCMA hours + TJU lab + one summer course (see cushion list) — still a win.</li>
+    <li>Ask the summer PI on day one: "What can I contribute that could become a poster or abstract?"</li>
+    <li>Optional cushion: EMT-B evening course at community college (~$1–1.5k, unlocks $17–20/hr ER tech shifts + acute-care stories).</li>
+  </ul></div>
+
+<div class="card term"><span class="when">Fall 2027 · Junior I — momentum + Goldwater window</span>
+  <div class="grid2">
+    <div><div class="mini">Courses</div><ul class="t dot">
+      <li>Physics I + Lab</li><li>Principles of Genetics</li><li>Biochemistry I</li>
+      <li><b>Cushion:</b> upper-level Psych or Sociology (MCAT §4 fuel)</li></ul></div>
+    <div><div class="mini">Everything else</div><ul class="t">
+      <li>Oct 1: FAFSA again · APIA Scholars window opens (if AAPI-heritage eligible)</li>
+      <li>Nov: <b>Goldwater campus nomination</b> — ONLY if leaning MD-PhD (research-career intent required); $7,500/yr</li>
+      <li>Build MCAT plan backward from an April 2028 test date</li>
+      <li>Swap/add job: medical scribe shifts (~$17–19/hr) = paid MCAT-adjacent pattern recognition</li></ul></div>
+  </div></div>
+
+<div class="card term"><span class="when">Spring 2028 · Junior II — MCAT season</span>
+  <ul class="t">
+    <li>Courses: Physics II + Lab · Microbiology · Biochemistry II · lightest possible 4th (protect the GPA + MCAT)</li>
+    <li><b>January: AAMC Fee Assistance Program</b> — before registering ($355→$145 MCAT, free official prep, ~$1,068 AMCAS fees waived)</li>
+    <li>Dedicated MCAT block Jan–Apr: 300+ hrs, all 6 AAMC full-lengths, test April/May → target <b>515+</b></li>
+    <li>Present poster at TJU research day; request 4 letters in May (2 science profs + PI + physician)</li>
+    <li><b>May: THE FORK.</b> Cum ≥3.55 &amp; MCAT ≥512 → apply June 2028. Otherwise choose the power gap year (apply June 2029) — no shame, better odds.</li>
+  </ul></div>
+
+<div class="card term"><span class="when">Summer 2028 → Spring 2029 · Senior year (both tracks)</span>
+  <div class="grid2">
+    <div><div class="mini">Track A — applying now</div><ul class="t">
+      <li>June 2028: AMCAS day-one submission (20–25 schools incl. every tuition-free program + SKMC)</li>
+      <li>Jul–Sep: secondaries &lt;2 weeks each; Sep–Mar interviews</li>
+      <li>Senior courses: Pathology + upper-bio + <b>cushions:</b> Spanish for Health / Immunology / honors research credits</li>
+      <li>Choose the cheapest strong acceptance by Apr 30 · graduate May 2029 🎓</li></ul></div>
+    <div><div class="mini">Track B — power gap year</div><ul class="t">
+      <li>Fall 2028: apply <b>NIH Postbac IRTA</b> (paid ~$43k/yr research year, rolling) + Jefferson/CHOP/Penn research-assistant jobs ($40–48k)</li>
+      <li>June 2029: AMCAS with FOUR years of grades (cum ~3.62–3.69) + a professional research year on the resume</li>
+      <li>Interviews during the paid gap year · matriculate 2030</li></ul></div>
+  </div></div>
+
+<h2 class="sec" id="courses"><span class="n">3</span>Cushion Courses — beyond the checklist</h2>
+<p class="lead">None are required. Each one either raises the MCAT, feeds the neurosurgeon story, or makes med school easier.</p>
+<table>
+  <tr><th>Course</th><th>Why it's a cushion</th><th>Best slot</th></tr>
+  <tr class="hot"><td>Neuroscience / Neurobiology</td><td>The story-starter: "I chose the brain in year two." Feeds lab work + MCAT psych section.</td><td>Spring 2027</td></tr>
+  <tr><td>Biochemistry II</td><td>MCAT's single highest-yield subject; makes M1 dramatically easier.</td><td>Spring 2028</td></tr>
+  <tr><td>Statistics with R or Python (or CS 101)</td><td>Turns her into the lab member who can analyze data — the #1 way undergrads earn authorship.</td><td>Any · summer OK</td></tr>
+  <tr><td>Upper-level Psychology or Sociology</td><td>MCAT §4 (Psych/Soc) is 25% of the exam and pure memorized points.</td><td>Fall 2027</td></tr>
+  <tr><td>Medical Spanish / Spanish for Health</td><td>Philadelphia patient population + interviews love it; instantly useful in her clinic job.</td><td>Senior year</td></tr>
+  <tr><td>Immunology or Pharmacology elective</td><td>Direct M1 head start; strong letters often come from small upper electives.</td><td>Senior year</td></tr>
+  <tr><td>Bioethics / Public Speaking</td><td>Secondaries + MMI interview fuel; easy-A GPA protection done right.</td><td>Any light term</td></tr>
+  <tr><td>Honors thesis / research-for-credit</td><td>GPA-friendly A's for lab hours she's doing anyway; "honors thesis" line on AMCAS.</td><td>Junior–Senior</td></tr>
+</table>
+<div class="note">Summer gen-eds at community college are fine for lightening loads — but keep every science prerequisite at TJU (med schools check).</div>
+
+<h2 class="sec" id="earn"><span class="n">4</span>The Earning Map — money that also counts</h2>
+<table>
+  <tr><th>Gig</th><th>Pay (Philly)</th><th>Admissions value</th><th>How to get it</th></tr>
+  <tr class="hot"><td>Medical Assistant (her CCMA)</td><td>$19–23/hr</td><td>⭐⭐⭐ paid clinical hours — the gold currency</td><td>Jefferson Health careers page, ZipRecruiter "CCMA part-time," dermatology/cardiology offices</td></tr>
+  <tr><td>Medical scribe (ER or clinic)</td><td>$16–19/hr</td><td>⭐⭐⭐ physician-side pattern recognition; MCAT-adjacent</td><td>ScribeAmerica / ProScribe; apply 2 months before a semester</td></tr>
+  <tr><td>TA or peer tutor (she's TA'd before!)</td><td>$12–18/hr</td><td>⭐⭐ leadership + a professor letter</td><td>Ask the professor of any class she aces; TJU learning center</td></tr>
+  <tr><td>Paid research assistant / work-study lab tech</td><td>$15–17/hr</td><td>⭐⭐⭐ research hours with income</td><td>Check the work-study box on FAFSA; ask her PI about funding lines</td></tr>
+  <tr><td>AHA BLS/CPR instructor (she holds CPR)</td><td>$25–40/class-hr</td><td>⭐⭐ teaching + certification leadership</td><td>~$300 instructor course at any AHA training center; teach weekend classes</td></tr>
+  <tr><td>ER technician (after optional EMT-B)</td><td>$17–20/hr</td><td>⭐⭐⭐ acute-care exposure — neuro trauma stories</td><td>EMT-B at CCP (~1 semester, evenings), then hospital ER tech postings</td></tr>
+  <tr><td>Paid summer research (§6)</td><td>$1,000–$5,000+/summer</td><td>⭐⭐⭐ research items + national network</td><td>The Nov–Feb application blitz</td></tr>
+</table>
+<div class="note green"><b>Rule of thumb:</b> cap paid work at 8–10 hr/wk during semesters. Every dollar should come from something that ALSO builds the application — never a job that only pays.</div>
+
+<h2 class="sec" id="schol"><span class="n">5</span>Scholarship &amp; Money Map — with the targets to win each</h2>
+<div class="card"><h3>Every single year (non-negotiable)</h3><ul class="t">
+  <li><b>FAFSA — October 1</b> + PA State Grant (PHEAA) renewal; check the work-study box.</li>
+  <li>Email TJU financial aid each spring: "Are there named/endowed scholarships I can apply or be considered for next year?" (Many go under-claimed.)</li>
+  <li>After every Dean's List semester, send the update to the aid office + any scholarship files.</li>
+</ul></div>
+<table>
+  <tr><th>Scholarship</th><th>Worth</th><th>Window</th><th>Target to win it</th></tr>
+  <tr class="hot"><td>APIA Scholars (AAPI heritage)</td><td>$2.5k–$20k</td><td>Sep–Jan yearly</td><td>2.7+ GPA ✓ already · FAFSA on file · strong personal essay (comeback story works)</td></tr>
+  <tr><td>BACI programs (Burmese-heritage students, if applicable)</td><td>varies</td><td>spring</td><td>Check thebaci.org scholarships page each March</td></tr>
+  <tr class="hot"><td>Goldwater Scholarship</td><td>$7,500/yr</td><td>Campus nom. Nov 2027</td><td><b>Only on the MD-PhD lean</b> (research-career intent required). Needs: 3.75+ by then, 12+ months in one lab, a PI champion</td></tr>
+  <tr><td>Phi Kappa Phi / TriBeta honor societies</td><td>$500–$5k + resume line</td><td>junior year invites</td><td>3.5+ cum; join, then apply for their member awards</td></tr>
+  <tr><td>Philadelphia Foundation + hospital auxiliary / county medical society awards</td><td>$500–$5k</td><td>Feb–Apr yearly</td><td>Local + health-career essays; tiny applicant pools = best odds per hour</td></tr>
+  <tr class="hot"><td>AAMC Fee Assistance Program</td><td>$2,000+ of app costs</td><td>Jan 2028</td><td>Income ≤400% federal poverty line (parents' info required under 26); apply BEFORE MCAT registration</td></tr>
+  <tr><td>Med-school full rides (NYU · Einstein · CCLCM · Hopkins &lt;$300k · WashU · merit awards at Vanderbilt/Mayo/Pitt)</td><td>~$260,000</td><td>the 2028/29 cycle</td><td>The whole plan: 3.6ish upward-trend GPA + <b>515+ MCAT</b> + research depth + day-one AMCAS + polished interviews; then negotiate offers against each other</td></tr>
+</table>
+
+<h2 class="sec" id="intern"><span class="n">6</span>Internship &amp; Research Application Board</h2>
+<table>
+  <tr><th>Program</th><th>Deadline</th><th>Pays</th><th>Status for Anam</th></tr>
+  <tr class="hot"><td>TJU / Farber Institute labs (school-year)</td><td>rolling — email Sept 2026</td><td>credit or work-study</td><td><span class="chip" style="background:#0f9d6c">DO NOW</span> home-field advantage</td></tr>
+  <tr class="hot"><td>CHOP CRISSP (10-wk summer)</td><td>early Jan 2027</td><td>$5,000 + free housing</td><td><span class="chip" style="background:#5658d8">APPLY</span> pediatric-neuro labs exist</td></tr>
+  <tr class="hot"><td>SHPEP (6-wk summer)</td><td>Feb 5, 2027</td><td>free + $1,000</td><td><span class="chip" style="background:#5658d8">APPLY</span> last eligible year (≤60 credits)</td></tr>
+  <tr><td>NIH Summer Internship (SIP)</td><td>mid-Feb 2027</td><td>~$2,300/mo</td><td><span class="chip" style="background:#5658d8">APPLY</span> request NINDS placement</td></tr>
+  <tr><td>Leadership Alliance SR-EIP</td><td>~Feb 3, 2027</td><td>stipend + housing + travel</td><td><span class="chip" style="background:#5658d8">APPLY</span> 3.0+ ✓; frame MD-PhD curiosity honestly</td></tr>
+  <tr><td>Amgen Scholars</td><td>Feb 1, 2027</td><td>~$4–5k package</td><td><span class="chip" style="background:#f5a623">STRETCH</span> needs 3.2 cum — one strong fall unlocks it</td></tr>
+  <tr><td>Junior-summer repeat (same list + Jefferson SURF-type programs)</td><td>Nov 2027–Feb 2028</td><td>varies</td><td><span class="chip" style="background:#9a6a86">NEXT CYCLE</span> aim for a returning-student role</td></tr>
+  <tr><td>NIH Postbac IRTA (gap-year plan B)</td><td>apply Fall 2028, rolling</td><td>~$43,000/yr</td><td><span class="chip" style="background:#16b1c9">IF GAP YEAR</span> the classic power move</td></tr>
+  <tr><td>Research-assistant jobs: Jefferson / CHOP / Penn postings</td><td>always open</td><td>$40–48k full-time</td><td><span class="chip" style="background:#16b1c9">IF GAP YEAR</span> search "clinical research coordinator neuro"</td></tr>
+</table>
+<div class="note">Blitz math: five applications each winter ≈ 15–20 focused hours. One yes = a paid, resume-defining summer. Apply to ALL, take the best offer, politely decline the rest.</div>
+
+<h2 class="sec" id="shadow"><span class="n">7</span>Shadowing, Letters &amp; the Two Magic Emails</h2>
+<div class="grid2">
+<div class="card"><h3>Shadowing plan (50+ hrs total)</h3><ul class="t">
+  <li>20 hrs neurosurgery — Farber Institute / Jefferson Hospital for Neurosciences (on campus!)</li>
+  <li>15 hrs primary care (shows breadth; committees check)</li>
+  <li>15 hrs anything acute: EM, ICU, anesthesia</li>
+  <li>Log every session same-day: date · physician · what she saw · one reflection line (this becomes AMCAS essays)</li></ul></div>
+<div class="card"><h3>Letter bank (needs 4–5 by May 2028)</h3><ul class="t">
+  <li>2 science professors (A in their class + office hours = ask in person)</li>
+  <li>1 PI (the multi-year lab makes this glow)</li>
+  <li>1 physician (clinic supervisor or shadowed neurosurgeon)</li>
+  <li>TJU committee letter if offered — start that file junior fall</li></ul></div>
+</div>
+<div class="mini">Template 1 — the lab email (send to 5 PIs, Sept 2026)</div>
+<div class="tmpl">Subject: Sophomore interested in your [topic] research
+
+Dear Dr. [Name],
+I'm a second-year biology student at Jefferson (pre-med, certified clinical medical assistant) and I read your recent work on [one specific paper/topic — one sentence on why it interests you]. I'd love to contribute to your lab 3–4 hours a week this semester — I'm happy to start with anything, and I'm learning Python. Could I stop by office hours or meet for 15 minutes?
+Thank you for your time,
+Anam [Last name] · [phone]</div>
+<div class="mini">Template 2 — the shadowing ask (works for any physician)</div>
+<div class="tmpl">Subject: Pre-med shadowing request — Jefferson undergraduate
+
+Dear Dr. [Name],
+I'm a Jefferson biology sophomore working as a certified medical assistant, and I'm exploring [neurosurgery/specialty]. Would you be open to letting me observe for a day or two this semester? I've completed HIPAA training through my MA role and can provide any paperwork your office needs.
+Gratefully,
+Anam [Last name] · [phone]</div>
+
+<h2 class="sec" id="targets"><span class="n">8</span>The Target Board — standard vs. cushion</h2>
+<table>
+  <tr><th>Metric</th><th>Target (gets her there)</th><th>Cushion (puts her above)</th></tr>
+  <tr class="hot"><td>Each remaining semester GPA</td><td>3.8</td><td>3.9+</td></tr>
+  <tr><td>Cum GPA · May 2027</td><td>~3.35</td><td>3.40+</td></tr>
+  <tr><td>Cum GPA · May 2028 (Fork checkpoint)</td><td>~3.50</td><td>3.55+</td></tr>
+  <tr><td>Cum GPA at application</td><td>3.55–3.65</td><td>3.69+ (gap-year cycle)</td></tr>
+  <tr><td>Science (BCPM) GPA from today</td><td>3.7</td><td>3.85</td></tr>
+  <tr class="hot"><td>MCAT</td><td>515</td><td>518+</td></tr>
+  <tr><td>Paid clinical hours at application</td><td>300</td><td>600+ (the CCMA job compounds)</td></tr>
+  <tr><td>Shadowing</td><td>50 hrs</td><td>80 hrs incl. 20 in neuro OR</td></tr>
+  <tr><td>Research</td><td>18+ months, 1 poster</td><td>1 publication credit + Goldwater nomination</td></tr>
+  <tr><td>Volunteering</td><td>100 hrs consistent</td><td>150+ at ONE site (depth beats variety)</td></tr>
+  <tr><td>Letters</td><td>4</td><td>5 + committee letter</td></tr>
+  <tr><td>Leadership</td><td>1 sustained role</td><td>officer/founder 2+ yrs (pre-med club, MA mentoring, BLS instructor)</td></tr>
+  <tr class="hot"><td>Med school debt</td><td>minimized</td><td>$0 — free-tuition acceptance or full merit ride</td></tr>
+</table>
+
+<h2 class="sec" id="week"><span class="n">9</span>The Weekly Rhythm (semester template)</h2>
+<div class="card"><ul class="t dot">
+  <li><b>Classes + study:</b> ~25 protected hours. Study same-day as lecture; office hours weekly from week 1.</li>
+  <li><b>Paid clinical (CCMA/scribe):</b> 8–10 hrs, ideally one weekend shift + one evening.</li>
+  <li><b>Lab:</b> 3–4 hrs in one block (labs reward reliability, not hours).</li>
+  <li><b>Volunteering:</b> 2 hrs, same site every week.</li>
+  <li><b>Python / MCAT drip:</b> 30 min/day, 5 days.</li>
+  <li><b>Guardrails:</b> 7-hour sleep floor · Sunday 30-min planning reset · gym or walk 3× — the GPA lives or dies on these.</li>
+  <li><b>Emergency protocol:</b> any exam &lt; B− → tutoring center that week + professor office hours, no exceptions. Late-semester crisis? A strategic W beats a C− (one W is a footnote; a C− is forever in BCPM).</li>
+</ul></div>
+
+<div class="note green" style="margin-top:26px"><b>The one-sentence version:</b> Ace every remaining semester, get paid for clinical hours she already qualifies for, live in one lab, hit every Nov–Feb deadline, score 515+, apply day-one to every free med school — and walk into the neurosurgery race debt-free with the Farber Institute already on her resume.</div>
+
+<footer>Built for Anam · July 2026 · Companion to the 3D map (<a href="index.html">back to the world</a>)<br>
+Key sources: AAMC · NRMP Charting Outcomes · goldwaterscholarship.gov · theleadershipalliance.org · shpep.org · research.chop.edu · training.nih.gov · students-residents.aamc.org (FAP)</footer>
+</div>
+</body>
+</html>

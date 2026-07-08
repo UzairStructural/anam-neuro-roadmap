@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Anam's Road to Neurosurgeon · Interactive 3D Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<!-- Design system: single source of truth for the "Clinician" theme. See design-system.md -->
+<link rel="stylesheet" href="tokens.css">
+<style>
+  /* Legacy aliases → semantic tokens (tokens.css). Every var(--pink) now flows from the system. */
+  :root{ --pink:var(--c-primary); --pink-d:var(--c-primary-deep); --ink:var(--c-ink); --ink2:var(--c-ink-soft);
+    --gold:var(--c-brass); --plum:var(--c-pine);
+    --glass:var(--c-glass); --glass-b:var(--c-glass-border); }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;overflow:hidden;background:#f4ece8;
+    font-family:'Manrope',system-ui,sans-serif;color:var(--ink);overscroll-behavior:none;
+    -webkit-font-smoothing:antialiased}
+  .fh{letter-spacing:-.01em}
+  #c{position:fixed;inset:0;display:block;touch-action:none;filter:saturate(1.07) contrast(1.03) brightness(1.01)}
+  /* subtle vignette over the 3D scene only (sits under all UI chrome) */
+  #vig{position:fixed;inset:0;pointer-events:none;z-index:var(--z-vignette);
+    background:radial-gradient(130% 115% at 50% 40%,transparent 58%,rgba(18,38,34,.16) 100%)}
+  #vig{position:fixed;inset:0;z-index:8;pointer-events:none;
+    background:radial-gradient(125% 105% at 50% 40%,transparent 52%,rgba(120,40,90,.14) 100%)}
+  #leaders{position:fixed;inset:0;z-index:9;pointer-events:none;width:100%;height:100%;overflow:visible}
+  .fh{font-family:'Fraunces',serif}
+
+  /* === FLOATING CHROME · title · targets HUD · bottom nav === */
+  #title{position:fixed;top:16px;left:18px;z-index:20;display:flex;align-items:center;gap:11px;
+    padding:9px 15px;border-radius:19px;background:var(--glass);backdrop-filter:blur(12px);
+    box-shadow:0 10px 30px rgba(40,110,95,.2);border:1.5px solid var(--glass-b);pointer-events:none}
+  #title .badge{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:21px;
+    background:linear-gradient(135deg,var(--c-primary-soft),var(--c-primary));box-shadow:0 6px 16px rgba(18,110,96,.5)}
+  #title h1{font-size:18px;margin:0;line-height:1.05}
+  #title p{margin:2px 0 0;font-size:12px;color:var(--ink2);font-weight:600}
+
+  #hud{position:fixed;top:16px;right:18px;z-index:20;display:flex;gap:7px;padding:8px;border-radius:16px;
+    background:var(--glass);backdrop-filter:blur(12px);border:1.5px solid var(--glass-b);
+    box-shadow:0 8px 22px rgba(40,110,95,.16);cursor:pointer}
+  #hud .h{padding:5px 11px;border-radius:11px;background:#fff;text-align:center;line-height:1.05}
+  #hud .h b{font-family:'Fraunces';font-size:14px;color:var(--pink-d);display:block;white-space:nowrap}
+  #hud .h span{font-size:9.5px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.3px}
+
+  #nav{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:8px;
+    padding:8px;border-radius:22px;background:var(--glass);backdrop-filter:blur(12px);
+    border:1.5px solid var(--glass-b);box-shadow:0 12px 34px rgba(40,110,95,.22);flex-wrap:wrap;justify-content:center;max-width:96vw}
+  .nb{border:none;cursor:pointer;font-family:'Fraunces';font-weight:700;font-size:13px;color:#fff;
+    padding:10px 14px;border-radius:15px;display:flex;align-items:center;gap:6px;transition:transform .15s,filter .2s;white-space:nowrap}
+  .nb:hover{transform:translateY(-2px)} .nb:active{transform:translateY(0)}
+  .nb.home{background:linear-gradient(135deg,#9a6a86,#5a2a4d)}
+  .nb.tl{background:linear-gradient(135deg,var(--c-primary-soft),var(--c-primary))}
+  .nb.mo{background:linear-gradient(135deg,#2fb98a,#0f9d6c)}
+  .nb.ra{background:linear-gradient(135deg,#4a6f9a,#5658d8)}
+  .nb.tg{background:linear-gradient(135deg,#bfa063,#b8894e);color:#3f2c10}
+  .nb.pl{background:linear-gradient(135deg,#2f7d8a,#0d8fa3)}
+
+  #labels{position:fixed;inset:0;z-index:10;pointer-events:none}
+  .lab{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;
+    font-family:'Fraunces';font-weight:700;white-space:nowrap;transition:opacity .25s}
+  .lab.stn{display:flex;align-items:center;gap:7px;padding:5px 11px 5px 6px;border-radius:14px;
+    background:rgba(255,255,255,.92);box-shadow:0 6px 16px rgba(40,100,90,.28);font-size:12.5px;color:var(--ink)}
+  .lab.stn .num{width:21px;height:21px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:12px}
+  .lab.stn.cur{outline:2.5px solid var(--c-primary);outline-offset:1px;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 6px 16px rgba(18,110,96,.5)}50%{box-shadow:0 6px 26px rgba(18,110,96,.9)}}
+  .lab.spec{padding:3px 9px;border-radius:12px;background:rgba(255,255,255,.9);font-size:11px;color:var(--ink);
+    box-shadow:0 4px 12px rgba(40,100,90,.25);display:flex;align-items:center;gap:5px}
+  .lab.summit{padding:6px 13px;border-radius:15px;font-size:14px;color:#fff;
+    background:linear-gradient(135deg,var(--c-brass-light),var(--c-brass));box-shadow:0 8px 20px rgba(184,137,78,.55)}
+  .lab:hover{filter:brightness(1.04) saturate(1.1)}
+
+  /* === SIDE PANEL · station & specialty detail (bottom-sheet on mobile) === */
+  #panel{position:fixed;top:0;right:0;height:100%;width:416px;max-width:92vw;z-index:30;
+    transform:translateX(106%);transition:transform .5s cubic-bezier(.2,.8,.2,1);padding:16px;display:flex}
+  #panel.show{transform:translateX(0)}
+  .card{position:relative;width:100%;height:100%;border-radius:24px;overflow:hidden auto;
+    background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(246,251,249,.95));backdrop-filter:blur(16px);
+    border:1.6px solid rgba(255,255,255,.7);box-shadow:0 24px 60px rgba(30,95,84,.3);scrollbar-width:thin}
+  .card::-webkit-scrollbar{width:7px}.card::-webkit-scrollbar-thumb{background:#f3c4dd;border-radius:9px}
+  .phead{padding:20px 22px 16px;color:#fff;position:relative}
+  .phead .dt{font-weight:700;font-size:12px;opacity:.95;letter-spacing:.4px;text-transform:uppercase}
+  .phead h2{font-family:'Fraunces';margin:5px 0 2px;font-size:24px;line-height:1.08}
+  .phead .tg{display:inline-block;margin-top:9px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.55);
+    padding:4px 12px;border-radius:18px;font-weight:800;font-family:'Fraunces';font-size:12px;letter-spacing:.3px}
+  .pclose{position:absolute;top:14px;right:14px;width:33px;height:33px;border-radius:50%;border:none;cursor:pointer;
+    background:rgba(255,255,255,.3);color:#fff;font-size:17px;font-weight:800}
+  .pbody{padding:16px 20px 26px}
+  .blurb{font-size:14px;font-weight:600;color:var(--ink2);margin:0 0 13px;line-height:1.46}
+  .goalchip{display:inline-block;background:#edf6f2;border-left:4px solid var(--pink);border-radius:11px;
+    padding:8px 12px;font-weight:700;font-size:13px;margin-bottom:12px}
+  .sect{font-family:'Fraunces';font-size:15px;margin:17px 0 9px;display:flex;align-items:center;gap:8px}
+  .sect .ln{flex:1;height:2px;border-radius:2px;background:#f0d6e6}
+  .sem{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .semcol{background:#fff;border-radius:14px;padding:12px;box-shadow:0 5px 14px rgba(40,110,95,.1)}
+  .semcol h4{margin:0 0 7px;font-family:'Fraunces';font-size:13.5px;color:var(--pink-d)}
+  .semcol ul,.list{list-style:none;margin:0;padding:0}
+  .semcol li{font-size:12.5px;font-weight:600;padding:4px 0 4px 16px;position:relative;line-height:1.3}
+  .semcol li:before{content:"";position:absolute;left:2px;top:9px;width:7px;height:7px;border-radius:50%;background:var(--pink)}
+  .list li{font-size:13.5px;font-weight:600;padding:6px 0 6px 26px;position:relative;line-height:1.38}
+  .list li:before{content:"✓";position:absolute;left:0;top:5px;color:#2e8b6f;font-weight:800}
+  .list.dot li:before{content:"";left:5px;top:11px;width:8px;height:8px;border-radius:50%;background:var(--pink)}
+  .list.warn li:before{content:"⚠";color:#e67e22}
+  .mtable{width:100%;border-collapse:separate;border-spacing:0 6px}
+  .mtable td{background:#fff;padding:9px 12px;font-weight:700;font-size:13px;box-shadow:0 4px 10px rgba(40,110,95,.08)}
+  .mtable td:first-child{border-radius:11px 0 0 11px}
+  .mtable td:last-child{border-radius:0 11px 11px 0;text-align:right;font-family:'Fraunces';font-size:15px}
+  .mtable tr.hot td{background:#e8f4ef;outline:1.5px solid #a3d3c6}
+  .notebox{font-size:12.5px;font-weight:600;color:var(--ink2);background:#edf6f2;border-radius:12px;
+    padding:10px 13px;line-height:1.45;margin-top:10px}
+  .notebox.green{background:#eefaf4;color:#177a55;border-left:4px solid #2fb98a}
+  .notebox.red{background:#fdeef0;color:#b03a48;border-left:4px solid #2f7d6b}
+  .scoregrid{display:flex;flex-direction:column;gap:8px}
+  .scorerow{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:13px;
+    padding:11px 14px;box-shadow:0 5px 14px rgba(40,110,95,.1);gap:10px}
+  .scorerow .l{font-weight:700;font-size:13px}.scorerow .l small{display:block;color:var(--ink2);font-size:11px;font-weight:600}
+  .scorerow .v{font-family:'Fraunces';font-size:19px;white-space:nowrap}
+
+  /* === MODALS / SHEETS · Full Plan · Playbook · Radar · Targets · This-Week === */
+  .modal{position:fixed;inset:0;z-index:40;background:rgba(28,44,40,.36);backdrop-filter:blur(3px);
+    display:none;align-items:center;justify-content:center;padding:18px}
+  .modal.show{display:flex}
+  .sheet{width:640px;max-width:95vw;max-height:88vh;overflow:auto;border-radius:24px;padding:22px;
+    background:linear-gradient(180deg,#fff,#f1f8f5);box-shadow:0 30px 70px rgba(25,80,70,.4);scrollbar-width:thin}
+  .sheet::-webkit-scrollbar{width:8px}.sheet::-webkit-scrollbar-thumb{background:#f3c4dd;border-radius:9px}
+  .sheet h2{font-family:'Fraunces';margin:0 0 3px;font-size:22px;color:var(--pink-d)}
+  .sheet .sub{margin:0 0 15px;color:var(--ink2);font-weight:600;font-size:13px;line-height:1.4}
+  .sheet .x{float:right;border:none;cursor:pointer;background:#d6ece4;color:var(--pink-d);font-family:'Fraunces';
+    font-weight:800;font-size:15px;width:34px;height:34px;border-radius:50%}
+  .sheet h3.gsec{font-family:'Fraunces';font-size:15.5px;margin:18px 0 8px;color:var(--ink)}
+  .tline{position:relative;margin:6px 0 0 6px;padding-left:24px}
+  .tline:before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:3px;border-radius:3px;
+    background:linear-gradient(180deg,#6fa598,#3d7d8f,#3f6f8f,#2e8b6f,#bfa063)}
+  .tev{position:relative;margin-bottom:15px}
+  .tev .dot{position:absolute;left:-24px;top:2px;width:18px;height:18px;border-radius:50%;border:3px solid #fff;
+    box-shadow:0 2px 6px rgba(0,0,0,.15)}
+  .tev .dt{font-weight:700;font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:.4px}
+  .tev h3{font-family:'Fraunces';margin:1px 0 4px;font-size:16px}
+  .tev .cs{font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.42}
+  .tev .cs b{color:var(--pink-d)}
+  .opcard{background:#fff;border-radius:15px;padding:13px 15px;box-shadow:0 6px 16px rgba(40,110,95,.12);margin-bottom:10px}
+  .opcard .top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  .opcard h4{font-family:'Fraunces';margin:0;font-size:15px}
+  .opcard .when{font-size:11.5px;font-weight:800;color:var(--ink2);text-transform:uppercase;letter-spacing:.3px}
+  .opcard .d{font-size:12.5px;font-weight:600;color:var(--ink2);margin-top:5px;line-height:1.42}
+  .chip{display:inline-block;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:10px;color:#fff}
+  .schcard{background:#fff;border-radius:15px;padding:13px 15px;box-shadow:0 6px 16px rgba(40,110,95,.12);margin-bottom:9px}
+  .schcard .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+  .schcard h4{font-family:'Fraunces';margin:0;font-size:15px}
+  .schcard .amt{font-family:'Fraunces';color:#0f9d6c;font-size:13.5px;white-space:nowrap}
+  .schcard .d{font-size:12.5px;font-weight:600;color:var(--ink2);margin-top:4px;line-height:1.42}
+  /* === YEAR-2 MONTH-BY-MONTH === */
+  .mo2card{background:var(--c-surface);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow-sm);border-left:4px solid var(--c-primary)}
+  .mo2card.summer{border-left-color:var(--c-brass);background:linear-gradient(180deg,#fff,var(--c-surface-tint))}
+  .mo2top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+  .mo2top h4{font-family:var(--font-display);margin:0;font-size:17px;color:var(--c-ink)}
+  .mo2top .sem{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#fff;background:var(--c-primary);border-radius:8px;padding:3px 9px}
+  .mo2sec{margin:9px 0 0}
+  .mo2lab{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--c-ink-soft)}
+  .mo2sec ul{list-style:none;margin:4px 0 0;padding:0}
+  .mo2sec li{font-size:12.5px;font-weight:600;color:var(--c-ink);line-height:1.4;padding:3px 0 3px 15px;position:relative}
+  .mo2sec li:before{content:"";position:absolute;left:2px;top:9px;width:6px;height:6px;border-radius:50%;background:var(--c-primary-soft)}
+  .mo2sec.dl li.star{background:var(--c-surface-tint);border-radius:8px;padding:6px 9px 6px 24px;margin:4px 0;font-weight:700}
+  .mo2sec.dl li.star:before{left:9px;top:12px;width:7px;height:7px;background:var(--c-warn)}
+  .mo2win{margin-top:9px;font-size:12.5px;font-weight:700;color:var(--c-primary-deep);background:var(--c-surface-tint);border-radius:10px;padding:8px 11px}
+  .twrow{display:flex;gap:11px;align-items:flex-start;background:#fff;border-radius:13px;padding:12px 14px;margin-bottom:8px;
+    box-shadow:0 5px 14px rgba(40,110,95,.1);cursor:pointer;font-weight:700;font-size:13.5px;color:var(--ink);line-height:1.35;transition:opacity .2s}
+  .twrow input{margin-top:1px;width:19px;height:19px;accent-color:var(--pink);flex:0 0 auto;cursor:pointer}
+  .twrow:has(input:checked){opacity:.5}
+  .twrow:has(input:checked) .twt{text-decoration:line-through}
+  .cd{margin-top:8px;font-size:13px;font-weight:800;color:#fff;border-radius:12px;padding:10px 13px;text-align:center;
+    background:linear-gradient(135deg,var(--c-primary-soft),var(--c-primary));box-shadow:0 6px 16px rgba(18,110,96,.35)}
+  #hud .cdc{background:linear-gradient(135deg,var(--c-primary-soft),var(--c-primary));cursor:pointer}
+  #hud .cdc b,#hud .cdc span{color:#fff}
+
+  #intro{position:fixed;left:18px;bottom:80px;z-index:18;max-width:330px;padding:15px 17px;border-radius:20px;
+    background:var(--glass);backdrop-filter:blur(12px);border:1.5px solid var(--glass-b);
+    box-shadow:0 14px 36px rgba(40,110,95,.18);transition:opacity .5s,transform .5s}
+  #intro h3{font-family:'Fraunces';margin:0 0 5px;font-size:16px}
+  #intro p{margin:0;font-size:12.5px;font-weight:600;color:var(--ink2);line-height:1.46}
+  #intro.hide{opacity:0;transform:translateY(12px);pointer-events:none}
+
+  #load{position:fixed;inset:0;z-index:60;display:grid;place-items:center;
+    background:linear-gradient(180deg,#f4ece8,#e7d3d8);transition:opacity .6s}
+  #load.gone{opacity:0;pointer-events:none}
+  #load .ring{width:52px;height:52px;border-radius:50%;border:5px solid var(--c-hairline);border-top-color:var(--c-primary);animation:spin 1s linear infinite;margin:0 auto}
+  #load p{font-family:'Fraunces';color:var(--pink-d);margin-top:15px;font-weight:700}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* serif = display headings only; sans for controls, map labels, numbers */
+  .nb,.lab.stn,.lab.spec,.lab.summit,#hud .h b{font-family:'Manrope',system-ui,sans-serif}
+  @media (max-width:640px){
+    #title h1{font-size:15px}#title p{display:none}
+    #hud .h span{display:none}#hud .h{padding:5px 8px}
+    #panel{width:100%;max-width:100%;padding:0;align-items:flex-end}
+    #panel{transform:translateY(106%)}#panel.show{transform:translateY(0)}
+    .card{height:82%;border-radius:24px 24px 0 0}
+    #intro{display:none}.nb{font-size:12px;padding:8px 11px}
+    .sem{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="vig"></div>
+<div id="vig"></div>
+<svg id="leaders"></svg>
+<div id="labels"></div>
+
+<div id="title"><div class="badge"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#fff" d="M10 3.2h4a1 1 0 0 1 1 1V9h4.8a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H15v4.8a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V15H4.2a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1H9V4.2a1 1 0 0 1 1-1Z"/></svg></div>
+  <div><h1 class="fh">Anam's Road to Neurosurgeon</h1><p>the optimized path · future Dr. Oo</p></div></div>
+
+<div id="hud">
+  <div class="h" data-tg="1"><b>3.07 → 3.6+</b><span>GPA rescue</span></div>
+  <div class="h" data-tg="1"><b>515+</b><span>MCAT</span></div>
+  <div class="h" data-tg="1"><b>250+</b><span>Step 2 CK</span></div>
+  <div class="h cdc" id="hudCd" title="Next big deadline — tap for the Radar"><b id="hudDays">···</b><span>days · Jan blitz</span></div>
+</div>
+
+<div id="nav"></div>
+<div id="panel"><div class="card" id="pcard"></div></div>
+
+<div class="modal" id="mPlan"><div class="sheet"><button class="x" data-close>✕</button>
+  <h2 class="fh">The Whole Plan, in Order</h2><p class="sub">Straight-through dates shown; the "power gap year" (recommended if GPA &lt; 3.55 at application) shifts everything after 2028 by one year.</p>
+  <div id="tlBody" class="tline"></div></div></div>
+
+<div class="modal" id="mMoney"><div class="sheet"><button class="x" data-close>✕</button>
+  <h2 class="fh">The Tuition-Free Playbook</h2><p class="sub">How to become a neurosurgeon owing $0 for medical school. Apply to ALL of Tier 1–2 — each is a lottery ticket worth ~$260,000.</p>
+  <div id="moBody"></div></div></div>
+
+<div class="modal" id="mRadar"><div class="sheet"><button class="x" data-close>✕</button>
+  <h2 class="fh">Don't-Miss Radar</h2><p class="sub">The "I wish I knew about this earlier" list — every dated opportunity on her runway, honestly labeled.</p>
+  <div id="raBody"></div></div></div>
+
+<div class="modal" id="mTargets"><div class="sheet" style="max-width:500px"><button class="x" data-close>✕</button>
+  <h2 class="fh">Every Number That Matters</h2><p class="sub">From today to the neurosurgery match.</p>
+  <div id="tgBody" class="scoregrid"></div>
+  <div class="notebox">Sources: AAMC matriculant data, NRMP Charting Outcomes 2024, Doximity 2025. Undergrad GPA gets you <b>into</b> med school — after that the neurosurgery race resets and Step 2 CK + research decide everything.</div></div></div>
+
+<div class="modal" id="mNow"><div class="sheet" style="max-width:470px"><button class="x" data-close>✕</button>
+  <h2 class="fh">This Week, Anam</h2><p class="sub">Your whole comeback is just the next small action, repeated. Check these off — they save automatically on this device.</p>
+  <div class="notebox green" style="margin-bottom:14px">3.07 isn’t the story — the comeback is. The neurosurgery race truly begins in med school; right now it’s simply <b>grades up · one lab · get paid for the clinical hours you’re already certified for.</b></div>
+  <div id="nowList"></div>
+  <div id="nowCd" class="cd"></div>
+  <div style="text-align:center;margin-top:12px"><button class="nb ra" id="nowRadar" style="display:inline-flex">See every dated deadline →</button></div>
+</div></div>
+
+<div class="modal" id="mYear2"><div class="sheet"><button class="x" data-close>✕</button>
+  <h2 class="fh">Year 2 · Month by Month</h2><p class="sub">Sophomore year — semesters 3 &amp; 4, Aug 2026 → summer 2027. Your detailed runway. <b style="color:var(--c-warn)">★</b> = a hard deadline; miss it and it's gone for a year.</p>
+  <div id="y2Body"></div>
+  <div class="notebox">This is the one year you fully control. Nail the GPA, get into a lab, work the CCMA job, and win one paid research summer — everything after is built on this.</div></div></div>
+
+<div id="load"><div style="text-align:center"><div class="ring"></div><p>building your road…</p></div></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+const V=THREE.Vector3, L=THREE.MathUtils.lerp;
+
+/* ================= 3D PALETTE =================
+   Mirrors tokens.css (--stage-*, --sky-*, --summit-gold…). Three.js can't read CSS
+   vars directly, so keep this in sync with the design system when colours change. */
+const PALETTE={
+  stage:['#6fa598','#12796a','#2f7d6b','#3d7d8f','#4a6f9a','#5658d8','#2f7d8a','#0f9d6c','#b8894e','#bfa063'],
+  skyTop:'#7f97a8', skyMid:'#bcd0cb', skyBot:'#eee4d4', fog:0xd8e2dc,
+  summitGold:'#bfa063', crossRed:'#b0454e', path:'#c3e2d8',
+  island:{top:'#d6d0c1',rim:'#b3a892',under:'#8f9a86',under2:'#6f7d6a',rock:'#8a9482'},
+  scrubs:'#158a76', scrubsDark:'#0d5e50'
+};
+
+/* ================= DATA =================
+   STATIONS[].c colours follow PALETTE.stage / tokens.css --stage-1…10 (sage-teal→brass summit). */
+const STATIONS=[
+ {key:'wake',c:'#6fa598',n:1,title:'Freshman Year — Done',date:'2025 – 26 · GPA 3.07 + CCMA ✓',tag:'THE WAKE-UP CALL',
+  blurb:'Year one was rough on the GPA — but you walked away with a CCMA certification most pre-meds don’t have, and 6 of 8 semesters are still unwritten. Here is exactly what the comeback requires.',
+  blocks:[
+   {h:'The rescue math — average across your remaining 6 semesters → final GPA',type:'table',rows:[
+     ['Earn 3.7 every semester','3.54 final'],['Earn 3.8 every semester','3.62 final ✓',1],
+     ['Earn 3.9 every semester','3.69 final ✓',1],['Earn 4.0 every semester','3.77 final']]},
+   {type:'note',cls:'green',txt:'Med schools read GPAs as a MOVIE, not a photo. A 3.07 start with a 3.8–3.9 finish is a famous, respected story — "she figured it out." Science GPA is nearly a fresh start too: most BCPM credits are still ahead of you.'},
+   {h:'Comeback rules',type:'check',items:['Cap at 14–16 credits — protect every A','Office hours weekly + tutoring center from week 1 (not after a bad exam)','Don’t obsess over retakes — AMCAS averages BOTH attempts; new A’s beat repair jobs','Every science grade from today forward is sacred (BCPM GPA)']},
+  ]},
+ {key:'soph',c:'#12796a',n:2,title:'Sophomore Comeback',date:'2026 – 27',tag:'★ YOU ARE HERE',cur:true,
+  blurb:'The most important year of the whole plan: prove the new GPA pattern, start neuroscience early, and fire off the January–February application blitz below.',
+  goal:'3.8 – 3.9 both semesters  →  cum ≈ 3.4 by May',
+  blocks:[
+   {h:'Courses',type:'sem',fall:['Organic Chemistry I + Lab','Anatomy & Physiology I','Biostatistics','Psychology (Intro)'],
+     spring:['Organic Chemistry II + Lab','Anatomy & Physiology II','Sociology (Intro)','Neuroscience elective if offered']},
+   {h:'Start the neurosurgeon thread now',type:'check',items:[
+     'Use your CCMA: paid clinical job 6–10 hrs/wk (Jefferson clinics / ER tech)',
+     'Email 5 labs at TJU + Farber Institute for Neuroscience — join ONE and stay years',
+     'Shadow a neurosurgeon at Jefferson Hospital for Neurosciences (it’s ON your campus — the region’s only dedicated neuro hospital)',
+     'Learn Python basics (neuro research + future BCI era superpower)']},
+   {h:'Jan–Feb 2027 application blitz — set alarms',type:'check',items:[
+     'CHOP CRISSP — paid summer research, $5,000 + free housing (due early Jan)',
+     'SHPEP — free 6-week summer program + $1,000 (due Feb 5; needs ≤60 credits: you qualify NOW, last realistic window)',
+     'NIH Summer Internship — paid NIH lab (due mid-Feb)',
+     'Amgen Scholars — needs 3.2 cum: one strong fall makes you eligible']},
+   {type:'note',cls:'red',txt:'Skip guilt-free: Mount Sinai FlexMed (Jan 2027) has a hard 3.6 GPA floor — even straight 4.0s this fall land you ~3.4. Not a failure; just math. Ask your advisor about SKMC’s IDeA sophomore program instead — free to ask, and TJU is home turf.'},
+  ]},
+ {key:'jr',c:'#2f7d6b',n:3,title:'Junior Year',date:'2027 – 28',tag:'PREREQS + MOMENTUM',
+  blurb:'Finish the science core, turn your lab work into a first poster, and set up the MCAT launchpad.',
+  goal:'3.8 – 3.9 both semesters  →  cum ≈ 3.5 by May',
+  blocks:[
+   {h:'Courses',type:'sem',fall:['Physics I + Lab','Principles of Genetics','Biochemistry I','MCAT content review begins (Jan)'],
+     spring:['Physics II + Lab','Microbiology','Biochemistry II','Dedicated MCAT prep (3–4 mo)']},
+   {h:'Milestones',type:'check',items:['Present a poster at TJU research day (first research "item")',
+     '150+ paid clinical hours banked (CCMA makes this automatic)','50+ shadowing hours — several inside the neurosurgery OR',
+     'Lock 4 letter-writers: 2 science profs + your PI + a physician','Ask pre-med office about SKMC linkage/early options for TJU students']},
+   {type:'note',txt:'January 2028: apply for AAMC Fee Assistance (FAP) BEFORE registering for the MCAT — it cuts the exam from $355 to $145, unlocks $390 of official prep free, and waives ~$1,068 of application fees. Benefits are never retroactive.'},
+  ]},
+ {key:'mcat',c:'#3d7d8f',n:4,title:'The MCAT',date:'Apr – Jun 2028',tag:'THE EQUALIZER',
+  blurb:'With a rebuilt-but-imperfect GPA, the MCAT is your megaphone: a 515+ tells every committee the 3.07 freshman year is ancient history.',
+  blocks:[
+   {h:'Score targets',type:'table',rows:[['Matriculant average','511 – 512'],['Your competitive floor','512'],['Your real target','515+ ✓',1],['Changes the conversation','518+']]},
+   {h:'The prep system',type:'dot',items:['3–4 months, 300+ hours, calendar built backward from test day',
+     'All 6 AAMC full-lengths under real timing (free via FAP)','Anki daily for content; UWorld/section banks for reasoning',
+     'Take it once, prepared — late spring, so scores land before submission']},
+  ]},
+ {key:'fork',c:'#4a6f9a',n:5,title:'The Fork: 2028 or 2029',date:'Decision: May 2028',tag:'CHOOSE YOUR CYCLE',
+  blurb:'The single smartest strategic decision on this map. Apply with 3 years of grades — or take a planned "power year" and apply with 4 years of A’s on the transcript.',
+  blocks:[
+   {h:'A · Apply June 2028 (straight through)',type:'dot',items:['AMCAS shows 3 years: cum ≈ 3.5 at best','Works if MCAT ≥ 515 and activities are strong','Matriculate 2029 · attending ~2040']},
+   {h:'B · Power gap year — apply June 2029',type:'check',items:['AMCAS shows ALL 4 years: cum ≈ 3.6+ and a perfect upward arc',
+     'Spend the year in PAID neuro research (NIH Postbac IRTA, or research assistant at Jefferson / Penn / CHOP)',
+     'More pubs before med school = neurosurgery head start','Matriculate 2030 · attending ~2041 — one year later, likely far stronger odds']},
+   {type:'note',cls:'green',txt:'Most matriculants now take 1+ gap years — it’s the norm, not a delay. Rule of thumb: if cum GPA < 3.55 or MCAT < 512 in May 2028, choose B without hesitation.'},
+  ]},
+ {key:'apply',c:'#5658d8',n:6,title:'Apply Smart + Free-Tuition Targeting',date:'Jun 2028 or Jun 2029',tag:'20–25 SCHOOLS',
+  blurb:'Submit AMCAS the first week it opens. Build the list so that every acceptance is affordable — and several would be completely free.',
+  blocks:[
+   {h:'The list formula',type:'dot',items:['ALL free-tuition schools: NYU, Einstein, Cleveland Clinic Lerner, Hopkins, WashU (lottery tickets — someone wins them)',
+     'SKMC (Jefferson) — home school with the #1 academically productive neurosurgery residency in North America',
+     '8–10 research-strong mid-range MD programs (the realistic core)','3–4 newer MD schools + strong DO backup only if needed',
+     'MD-PhD (MSTP) track instead, if research became your deepest story — free + $45–52k/yr stipend everywhere']},
+   {h:'Ready before submission',type:'check',items:['Cum GPA 3.55–3.65 with the upward movie','MCAT 515+','200+ clinical hrs (CCMA job), 50+ shadowing','1–2 research items + ongoing lab','Personal statement: the 3.07 → comeback → neuroscience story (own it, don’t hide it)','Secondaries returned < 2 weeks']},
+   {type:'note',txt:'Interviews Sep–Mar. Update letters in winter. Decisions by spring — then choose the cheapest strong acceptance: debt-free changes your whole neurosurgery residency.'},
+  ]},
+ {key:'m12',c:'#2f7d8a',n:7,title:'Med School M1–M2 · The Race Resets',date:'2029/30 – 2031/32',tag:'CLEAN SLATE',
+  blurb:'The day you enroll, undergrad GPA stops existing. Neurosurgery is now decided by exactly three things: research volume, Step 2 CK, and the people who vouch for you. Start all three in month one.',
+  blocks:[
+   {h:'Month-one moves',type:'check',items:['Join the neurosurgery interest group + AANS medical student chapter',
+     'Find a neurosurgery research mentor immediately — publish case reports, reviews, abstracts',
+     'Target 5–10 research items by end of M2 (matched applicants average ~25–30 total)','Honor pre-clinical blocks where possible']},
+   {h:'The gates',type:'dot',items:['USMLE Step 1 after M2 — pass/fail now: goal = PASS comfortably','Summer after M1: neurosurgery research fellowship (many depts fund these)','Build 2–3 faculty relationships that will become letters']},
+  ]},
+ {key:'m34',c:'#0f9d6c',n:8,title:'M3–M4 · Step 2, Aways & ERAS',date:'2031 – 33',tag:'PROVE-IT YEARS',
+  blurb:'Clerkships, the scored exam that now rules the match, and audition rotations where programs decide if they want you at 3 a.m. for seven years.',
+  blocks:[
+   {h:'The numbers that match',type:'table',rows:[['Step 2 CK — matched median','~ 255'],['Your target','250+ ✓',1],['Research items (matched avg)','~ 25–30'],['US MD senior match rate','~ 68–80%']]},
+   {h:'The campaign',type:'check',items:['Honor surgery + neurology clerkships','2–3 away sub-internships at neurosurgery programs (your real interviews)',
+     'Letters: 3 from academic neurosurgeons','Research year between M3–M4 if items < 15 (about a third of matched applicants do this)','Apply ERAS Sept · rank ~12+ programs · always file a backup plan (prelim surgery / research re-apply)']},
+  ]},
+ {key:'res',c:'#b8894e',n:9,title:'Match Day → Residency PGY 1–7',date:'2033/34 – 2040/41',tag:'7 YEARS OF FORGE',
+  blurb:'Third Friday of March: the envelope says neurosurgery. Then the longest, hardest, most transformative training in medicine — paid ~$65–80k/yr.',
+  blocks:[
+   {h:'The seven years',type:'dot',items:['~115 programs · ~240 spots nationwide','PGY-1 intern year → PGY-2/3 junior resident (ICU, trauma craniotomies)',
+     'PGY-4/5 enfolded research or fellowship years at academic programs','PGY-6/7 senior + chief year — running the service',
+     'USMLE Step 3 early · ABNS written boards during residency · oral boards after']},
+   {type:'note',cls:'green',txt:'If she chose a tuition-free school, she walks through these 7 years debt-free while classmates carry $300–400k. That freedom is the quiet superpower of this whole plan.'},
+  ]},
+ {key:'doc',c:'#bfa063',n:10,title:'Dr. Anam Oo, Neurosurgeon',date:'~ 2041 · age ~33',tag:'THE SUMMIT',summit:true,
+  blurb:'Board-certified neurosurgeon — the highest-paid, most selective specialty in American medicine, with 30+ years of career ahead. The gems floating above are the subspecialty paths (tap them!).',
+  blocks:[
+   {h:'Life at the top',type:'table',rows:[['Average compensation','$749,140 / yr',1],['Rank among all specialties','#1 of ~30'],['Optional fellowship','+1–2 years'],['Career horizon','30+ years']]},
+   {h:'The future she’s early for',type:'dot',items:['Brain-computer interfaces (BCI) moving into real neurosurgical trials','AI-guided imaging & robotic assistance','Her Python + research + CCMA-era patient skills compound the whole way']},
+  ]},
+];
+const SPECIALTIES=[
+ {n:'Spine',e:'🦴',fel:'+1 yr',d:'The workhorse — complex spine & scoliosis; biggest practice volume.',cc:'#3f6f8f'},
+ {n:'Brain Tumor / Skull Base',e:'🎗️',fel:'+1–2 yr',d:'Oncologic neurosurgery; awake craniotomies; deep academic ties.',cc:'#3d7d8f'},
+ {n:'Cerebrovascular',e:'🫀',fel:'+1–2 yr',d:'Aneurysms, strokes, bypasses — open + endovascular coils & stents.',cc:'#2f7d6b'},
+ {n:'Pediatric',e:'🧸',fel:'+1 yr',d:'Kids’ brains & spines — hydrocephalus, tumors, epilepsy surgery.',cc:'#2e8b6f'},
+ {n:'Functional + BCI',e:'🤖',fel:'+1 yr',d:'DBS for Parkinson’s, epilepsy surgery, brain-computer implants — the frontier.',cc:'#b8894e'},
+ {n:'Trauma / Critical Care',e:'🚑',fel:'+1 yr',d:'The 3 a.m. saves — TBI, emergent craniotomies, neuro-ICU.',cc:'#5658d8'},
+];
+const TARGETS=[
+ ['Every remaining semester','3.8 – 3.9','the whole plan rests on this'],
+ ['Cumulative GPA at application','3.55 – 3.65','with an unbroken upward trend'],
+ ['Science (BCPM) GPA from today','3.7+','mostly still unwritten — protect it'],
+ ['MCAT','515+','the megaphone that outshouts the 3.07'],
+ ['USMLE Step 1','PASS','pass/fail since 2022'],
+ ['USMLE Step 2 CK','250+','matched neurosurgery median ~255'],
+ ['Research items by ERAS','15 – 25+','matched applicants average ~25–30'],
+ ['Clinical hours (CCMA job)','200+','paid — she already holds the license'],
+ ['Shadowing incl. neurosurgery OR','50+','Jefferson Hospital for Neurosciences = on campus'],
+];
+const MONEY=[
+ {sec:'Tier 1 — Free for every admitted student'},
+ {n:'NYU Grossman',amt:'$64,250/yr → $0',d:'Full-tuition scholarship for all MD students since 2018. Elite research output — outstanding neurosurgery springboard.'},
+ {n:'Albert Einstein (Bronx)',amt:'tuition $0 forever',d:'Ruth Gottesman’s $1B gift (2024) made it permanently tuition-free. Strong clinical training, NYC research ecosystem.'},
+ {n:'Cleveland Clinic Lerner',amt:'$0 + built-in research year',d:'Every student full-tuition; 5-year program with a dedicated research year — practically designed for a future neurosurgeon. Tiny class (~32).'},
+ {sec:'Tier 2 — Free if family income qualifies'},
+ {n:'Johns Hopkins',amt:'$0 if income < $300k',d:'Bloomberg’s $1B (2024): tuition-free under $300k family income; living costs also covered under $175k. Top-3 neurosurgery department.'},
+ {n:'WashU St. Louis',amt:'~half the class pays $0',d:'$100M program: roughly half of students attend tuition-free (need + merit). Elite research school.'},
+ {sec:'Tier 3 — Free via a different deal (eyes open)'},
+ {n:'MD-PhD (MSTP) — any school',amt:'$0 + $45–52k/yr stipend',d:'Fully funded everywhere + salary. Adds 3–4 years, but supercharges academic neurosurgery. Only if research becomes her true love.'},
+ {n:'Military: USUHS / HPSP',amt:'$0 + officer salary',d:'Full ride + pay, BUT military match comes first and neurosurgery slots are few; ~7-year service payback. A calling, not a discount.'},
+ {n:'Merit full-tuition scholarships',amt:'$0 at award',d:'Vanderbilt (Canby Robinson), Mayo, Pitt, Emory and others hand out full-tuition merit awards — a 515+ MCAT + her comeback story is exactly what they fund.'},
+ {sec:'Traps that do NOT fit a neurosurgeon'},
+ {n:'NHSC Scholarship · NYU-Long Island · Geisinger free tuition',amt:'❌ skip',d:'All require PRIMARY CARE commitments (family med, peds, internal med). Taking them closes the neurosurgery door. Kaiser’s free-tuition window also ends with fall-2026 entrants — before her time.'},
+ {sec:'Boosters for the application itself'},
+ {n:'AAMC Fee Assistance Program',amt:'~$2,000+ of value',d:'MCAT $355→$145, official prep free ($390), ~$1,068 of AMCAS fees waived, MSAR free. Income-based (≤400% federal poverty line — parents’ info required under age 26). Apply the January before the MCAT; never retroactive.'},
+];
+const RADAR=[
+ {when:'Sep 2026',chip:'DO NOW',cc:'#0f9d6c',n:'Join a research lab + ask about SKMC IDeA',d:'Email 5 PIs at TJU / Farber Institute this month — labs fill in September. Same week: ask the pre-med office what SKMC early-assurance or linkage options exist for TJU undergrads (free question, home-field advantage).'},
+ {when:'Fall 2026',chip:'DO NOW',cc:'#0f9d6c',n:'Start the CCMA-powered clinical job',d:'6–10 hrs/wk paid patient care at Jefferson clinics. By application day this quietly becomes 300+ hours — most applicants scramble for what she already has.'},
+ {when:'Due early Jan 2027',chip:'APPLY',cc:'#5658d8',n:'CHOP CRISSP — summer research',d:'10 weeks at Children’s Hospital of Philadelphia: $5,000 stipend + FREE housing, 30 spots. Pediatric neuro labs exist — a dream first research summer.'},
+ {when:'Due Feb 5 2027',chip:'APPLY',cc:'#5658d8',n:'SHPEP — free summer program + $1,000',d:'Requires ≤60 completed credits and ≥2.5 GPA — she qualifies RIGHT NOW and this is her last realistic window. Housing, meals, travel covered. Alumni network for life.'},
+ {when:'Due mid-Feb 2027',chip:'APPLY',cc:'#5658d8',n:'NIH Summer Internship (SIP)',d:'Paid summer in an NIH lab (NINDS = the neuroscience institute). Apply to this AND CRISSP AND SHPEP — take the best offer.'},
+ {when:'Due Feb 1 2027',chip:'STRETCH',cc:'#b8894e',n:'Amgen Scholars',d:'Needs a 3.2 cumulative — one strong fall semester (3.85+) makes her eligible. Motivation with a deadline attached.'},
+ {when:'Due ~Feb 3 2027',chip:'APPLY',cc:'#5658d8',n:'Leadership Alliance SR-EIP',d:'Fully paid 10-week research summer (stipend + housing + travel) at top universities. Needs 3.0+ — she is ALREADY eligible. Frame an honest MD-PhD curiosity.'},
+ {when:'Due ~Feb 1 2027',chip:'APPLY',cc:'#5658d8',n:'Penn Med SUIP — flagship, minutes away',d:'Perelman School of Medicine Summer Undergraduate Internship: ~$5,500 stipend + housing, 10 weeks, one SEPTA ride from campus. No hard GPA cutoff beyond good standing. Confirm the exact 2027 date when the page reopens in fall 2026.'},
+ {when:'Due ~mid-Jan 2027',chip:'APPLY',cc:'#5658d8',n:'Drexel COM SURF — local + welcoming',d:'Drexel Summer Undergraduate Research Fellowship: ~$3,000 stipend, ~9 weeks, open to rising sophomores at any college. Right in Philadelphia — an easy, high-yield first research summer to pair with the others.'},
+ {when:'Due ~Jan 15 2027',chip:'MONEY',cc:'#0f9d6c',n:'APIA Scholars — need-based, up to $20k',d:'For AAPI students (first-gen / financial need prioritized). If Anam’s heritage qualifies this is one of the highest-ROI scholarships on the runway — one honest comeback essay. File FAFSA first so need is documented.'},
+ {when:'Watch Sep–Oct 2026',chip:'WATCH',cc:'#9a6a86',n:'Philly research wave: Wistar · Monell · Fox Chase',d:'These open ~October 2026 for January-2027 deadlines. Bookmark the Wistar (biomedical), Monell (chemical-senses/neuro-adjacent) and Fox Chase pages now, and check them the first week of October so none slip past.'},
+ {when:'Nov 2027',chip:'STRETCH',cc:'#b8894e',n:'Goldwater Scholarship — only on the MD-PhD lean',d:'$7,500/yr, the most prestigious undergrad STEM award. Pre-meds qualify ONLY with research-career (MD-PhD) intent. Needs ~3.75+ by junior fall + 12 months in one lab + a PI champion. Campus nomination first.'},
+ {when:'Jan 2027',chip:'SKIP',cc:'#b03a48',n:'Mount Sinai FlexMed — mathematically out',d:'Hard 3.6 GPA floor; even straight 4.0s reach only ~3.4 by the deadline. Knowing what NOT to chase protects the hours that matter. Zero guilt.'},
+ {when:'Jan 2028',chip:'MONEY',cc:'#0f9d6c',n:'AAMC Fee Assistance Program',d:'Apply BEFORE registering for the MCAT — $2,000+ in benefits, never retroactive. Mark it next to the MCAT registration date.'},
+ {when:'May 1 → early Jun 2028',chip:'CRITICAL',cc:'#0c5c50',n:'AMCAS Day-One submission',d:'(Or June 2029 on the power-gap-year plan.) Early submission is the single cheapest admissions advantage that exists.'},
+ {when:'Fall 2028 (if gap year)',chip:'APPLY',cc:'#5658d8',n:'NIH Postbac IRTA — the power year',d:'Paid full-time neuro research year at NIH between college and med school. The classic "wish I’d known" program — it converts a 3.5x file into a research-heavy one.'},
+ {when:'2029/30 · M1 week one',chip:'MED SCHOOL',cc:'#2f7d8a',n:'AANS student chapter + neurosurgery mentor',d:'The match clock starts on day one of M1. Interest group, mentor, first case report before winter break.'},
+ {when:'2031–32 · M3',chip:'MED SCHOOL',cc:'#2f7d8a',n:'Research-year decision + away rotations',d:'If research items < 15, take the dedicated research year (~⅓ of matched applicants do). Book 2–3 away sub-Is a year ahead.'},
+ {when:'Ongoing',chip:'WATCH',cc:'#9a6a86',n:'The tuition-free wave + the BCI era',d:'Bloomberg & Gottesman’s $1B gifts started a philanthropy race — more schools may flip to free before 2029; re-check the list every cycle. Meanwhile BCI/neurotech is exploding: her Python + neuro research habit now is a moat for 2040s neurosurgery.'},
+];
+const THISWEEK=[
+ ['lab','Email 5 research labs (TJU + Farber Institute) — reply to whoever answers, join ONE and stay for years'],
+ ['job','Apply to 3 CCMA / clinic jobs near campus — your license makes paid clinical hours automatic'],
+ ['cal','Put the Jan–Feb 2027 blitz in your phone: CRISSP, SHPEP, NIH, SR-EIP, Penn SUIP, Drexel SURF'],
+ ['adv','Book pre-med advising — ask about SKMC IDeA + doing research for course credit'],
+ ['gpa','Lock the week-1 habit: office hours + tutoring center from day one (every A is sacred)'],
+];
+const BLITZ=new Date('2027-01-07T00:00:00');
+
+/* ================= SCENE ================= */
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.NeutralToneMapping ?? THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(PALETTE.fog,42,98);
+const camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,0.1,300);
+const CAM_HOME=new V(19,18,37),TGT_HOME=new V(0,11,0);camera.position.copy(CAM_HOME);
+const controls=new OrbitControls(camera,canvas);
+controls.enableDamping=true;controls.dampingFactor=.07;controls.target.copy(TGT_HOME);
+controls.minDistance=10;controls.maxDistance=60;controls.maxPolarAngle=Math.PI*0.52;controls.enablePan=false;
+controls.autoRotate=true;controls.autoRotateSpeed=.45;
+
+const sky=new THREE.Mesh(new THREE.SphereGeometry(120,40,40),new THREE.ShaderMaterial({side:THREE.BackSide,
+  uniforms:{top:{value:new THREE.Color(PALETTE.skyTop)},mid:{value:new THREE.Color(PALETTE.skyMid)},bot:{value:new THREE.Color(PALETTE.skyBot)}},
+  vertexShader:`varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:`varying vec3 p;uniform vec3 top,mid,bot;void main(){float h=normalize(p).y*.5+.5;
+    vec3 c=mix(bot,mid,smoothstep(0.,.5,h));c=mix(c,top,smoothstep(.5,1.,h));gl_FragColor=vec4(c,1.);}`}));
+scene.add(sky);
+scene.add(new THREE.HemisphereLight(0xffe9f5,0xffc7e0,0.98));
+const key=new THREE.DirectionalLight(0xfff1e0,2.0);key.position.set(14,26,12);key.castShadow=true;
+key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-24,right:24,top:30,bottom:-6,far:90});key.shadow.bias=-4e-4;key.shadow.radius=4;scene.add(key);
+const fill=new THREE.DirectionalLight(0xffd9ec,.55);fill.position.set(-16,10,-8);scene.add(fill);
+const rim=new THREE.PointLight(0xead9ff,90,70);rim.position.set(-6,16,-14);scene.add(rim);
+const rim2l=new THREE.DirectionalLight(0xfff4e6,.35);rim2l.position.set(6,4,18);scene.add(rim2l);
+
+const COL=h=>new THREE.Color(h);
+function mat(c,o={}){const m=new THREE.MeshStandardMaterial({color:COL(c),roughness:o.rough??.6,metalness:o.metal??0});
+  m.envMapIntensity=o.env??.5;if(o.emi){m.emissive=COL(o.emi);m.emissiveIntensity=o.ei??.3}return m;}
+function cyl(rt,rb,h,c,seg=40,o){const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),c.isMaterial?c:mat(c,o));m.castShadow=m.receiveShadow=true;return m;}
+function ball(r,c,o){const m=new THREE.Mesh(new THREE.SphereGeometry(r,28,20),c.isMaterial?c:mat(c,o));m.castShadow=m.receiveShadow=true;return m;}
+function cone(r,h,c,seg=28,o){const m=new THREE.Mesh(new THREE.ConeGeometry(r,h,seg),c.isMaterial?c:mat(c,o));m.castShadow=true;return m;}
+function torus(R,r,c,o,seg=40){const m=new THREE.Mesh(new THREE.TorusGeometry(R,r,16,seg),c.isMaterial?c:mat(c,o));m.castShadow=true;return m;}
+function rbox(w,h,d,c,o){const m=new THREE.Mesh(new RoundedBoxGeometry(w,h,d,4,Math.min(w,h,d)*.18),c.isMaterial?c:mat(c,o));m.castShadow=m.receiveShadow=true;return m;}
+function octa(r,c,o){const m=new THREE.Mesh(new THREE.OctahedronGeometry(r,0),c.isMaterial?c:mat(c,o));m.castShadow=true;return m;}
+function star2D(rO,rI,c){const s=new THREE.Shape();for(let i=0;i<10;i++){const a=Math.PI/2+i*Math.PI/5,rr=i%2?rI:rO;const x=Math.cos(a)*rr,y=Math.sin(a)*rr;i?s.lineTo(x,y):s.moveTo(x,y);}s.closePath();
+  const g=new THREE.ExtrudeGeometry(s,{depth:.08,bevelEnabled:false});g.center();return new THREE.Mesh(g,c.isMaterial?c:mat(c));}
+const world=new THREE.Group();scene.add(world);
+
+(function(){const top=cyl(6.5,6.2,1.1,'#d6d0c1',56,{rough:.7});top.position.y=-0.55;world.add(top);
+ const rim2=torus(6.4,.28,'#b3a892',{rough:.6},60);rim2.rotation.x=Math.PI/2;world.add(rim2);
+ const u=cone(6,5,'#8f9a86',12,{rough:.7});u.rotation.x=Math.PI;u.position.y=-3;world.add(u);
+ const u2=cone(3.4,4,'#6f7d6a',10,{rough:.72});u2.rotation.x=Math.PI;u2.position.y=-6;world.add(u2);
+ for(let i=0;i<6;i++){const a=i/6*6.28;const rk=ball(1+Math.random()*.6,'#8a9482',{rough:.75});rk.scale.y=.7;rk.position.set(Math.cos(a)*5,-2.2-Math.random(),Math.sin(a)*5);world.add(rk);}})();
+
+const STN=STATIONS.length;const stationPos=[],stationMeshes={};const hoverable=[];
+for(let i=0;i<STN;i++){const t=i/(STN-1);
+  const ang=Math.PI*0.6+t*Math.PI*2.0;const rad=L(8.4,4.0,t);const y=L(0.6,16.5,t);
+  stationPos.push(new V(Math.cos(ang)*rad,y,Math.sin(ang)*rad));}
+stationPos[STN-1].set(0,18.2,0); // centre the summit above the coil (no more vanishing-point pile-up)
+{const curve=new THREE.CatmullRomCurve3(stationPos);
+ const g=new THREE.TubeGeometry(curve,220,0.32,10,false);
+ const tube=new THREE.Mesh(g,mat('#ffffff',{rough:.4,emi:PALETTE.path,ei:.5}));world.add(tube);}
+STATIONS.forEach((s,i)=>{
+  const p=stationPos[i];const g=new THREE.Group();g.position.copy(p);
+  const r=s.summit?2.2:1.3;
+  const pad=cyl(r,r,0.34,s.c,40,{emi:s.c,ei:.28});g.add(pad);
+  const ring=torus(r,.1,s.c,{emi:s.c,ei:.55},48);ring.rotation.x=Math.PI/2;ring.position.y=.2;g.add(ring);
+  if(s.summit){
+    const body=rbox(2.0,2.0,2.0,'#fff7fc',{rough:.5});body.position.y=1.3;g.add(body);
+    const roof=cone(1.7,1.4,s.c,4,{emi:s.c,ei:.15});roof.rotation.y=Math.PI/4;roof.position.y=3.0;g.add(roof);
+    const cc=mat('#b0454e',{emi:'#b0454e',ei:.5});
+    const cv=rbox(.26,.8,.16,cc);cv.position.set(0,2.0,1.02);g.add(cv);
+    const ch=rbox(.7,.26,.16,cc);ch.position.set(0,2.0,1.02);g.add(ch);
+    const crown=new THREE.Group();crown.position.y=4.4;g.add(crown);g.userData.crown=crown;
+    const cg=mat('#c0a066',{metal:.7,rough:.3,emi:'#c0a066',ei:.6});
+    const cb=torus(.7,.14,cg);cb.rotation.x=Math.PI/2;crown.add(cb);
+    for(let k=0;k<7;k++){const a=k/7*6.28;const sp=cone(.15,.55,cg,10);sp.position.set(Math.cos(a)*.7,.32,Math.sin(a)*.7);crown.add(sp);
+      const gem=ball(.1,'#b0454e',{emi:'#b0454e',ei:.6});gem.position.set(Math.cos(a)*.7,.62,Math.sin(a)*.7);crown.add(gem);}
+    const halo=cyl(3,3,.05,'#c0a066',48,{emi:'#c0a066',ei:.8});halo.position.y=.02;g.add(halo);
+    for(let k=0;k<10;k++){const a=k/10*6.28;const st=star2D(.2,.09,mat('#c0a066',{emi:'#c0a066',ei:.9}));
+      st.position.set(Math.cos(a)*3,2.6+Math.sin(a*2)*.7,Math.sin(a)*3);g.add(st);}
+  }else{
+    const orb=(s.key==='mcat'||s.key==='fork')?octa(.55,s.c,{emi:s.c,ei:.5}):ball(.5,s.c,{emi:s.c,ei:.4});
+    orb.position.y=.9;g.add(orb);g.userData.orb=orb;
+  }
+  const hit=new THREE.Mesh(new THREE.CylinderGeometry(r+.6,r+.6,s.summit?5:2.4,12),new THREE.MeshBasicMaterial({visible:false}));
+  hit.position.y=s.summit?1.6:.7;hit.userData.kind='stn';hit.userData.key=s.key;g.add(hit);hoverable.push(hit);
+  world.add(g);stationMeshes[s.key]=g;
+});
+
+const specMeshes=[];const specRing=new THREE.Group();specRing.position.y=20;world.add(specRing);
+SPECIALTIES.forEach((sp,i)=>{const a=i/SPECIALTIES.length*6.28;const r=6.8;
+  const g=new THREE.Group();g.position.set(Math.cos(a)*r,Math.sin(i*1.7)*0.6,Math.sin(a)*r);
+  const gem=octa(.5,sp.cc,{emi:sp.cc,ei:.45,metal:.2});g.add(gem);g.userData.gem=gem;
+  const hit=new THREE.Mesh(new THREE.SphereGeometry(.9,10,10),new THREE.MeshBasicMaterial({visible:false}));
+  hit.userData.kind='spec';hit.userData.idx=i;g.add(hit);hoverable.push(hit);
+  specRing.add(g);specMeshes.push(g);});
+
+let avatar;(function(){const a=new THREE.Group();a.position.set(0,0,4.6);a.rotation.y=Math.PI;a.scale.set(.96,1.14,.96);
+  const skin=mat('#f4c9a8',{rough:.5}),hair=mat('#4a2e3a',{rough:.5}),scr=mat('#158a76',{rough:.55});
+  const l=cyl(.5,.5,.5,'#0d5e50',24);l.position.y=.3;a.add(l);
+  const torso=rbox(.95,1.1,.62,scr);torso.position.y=1.0;a.add(torso);
+  for(const sx of[-.58,.58]){const arm=cyl(.17,.17,.88,scr,16);arm.position.set(sx,.98,0);arm.rotation.z=sx>0?.18:-.18;a.add(arm);const h=ball(.19,skin);h.position.set(sx,.55,.05);a.add(h);}
+  const head=ball(.6,skin);head.scale.set(1,.96,1.05);head.position.y=2.2;a.add(head);
+  const hr=ball(.66,hair);hr.scale.set(1.06,1.04,1.02);hr.position.set(0,2.34,.08);a.add(hr);
+  const bg=ball(.47,hair);bg.scale.set(1.2,.55,.55);bg.position.set(0,2.58,-.4);a.add(bg);
+  for(const sx of[-.5,.5]){const hs=ball(.24,hair);hs.scale.set(.8,1.7,.9);hs.position.set(sx,1.95,.16);a.add(hs);}
+  for(const sx of[-.2,.2]){const e=ball(.08,mat('#2a1a24',{rough:.3}));e.position.set(sx,2.22,-.54);a.add(e);
+    const bl=cyl(.1,.1,.02,mat('#d99a86',{emi:'#d99a86',ei:.3}),14);bl.rotation.x=Math.PI/2;bl.position.set(sx*1.6,2.06,-.5);a.add(bl);}
+  const st=torus(.43,.055,mat('#aeb6c2',{metal:.6,rough:.3}));st.position.set(0,1.55,-.02);a.add(st);
+  world.add(a);avatar=a;})();
+
+const clouds=[];function cloud(x,y,z,s){const g=new THREE.Group();
+  for(const[px,py,pz,r]of[[-1.4,0,0,1],[.2,0,.2,1.3],[1.4,0,0,1.05],[.5,.4,-.1,.85]]){const b=ball(r*s,'#ffffff',{rough:.95,emi:'#ffffff',ei:.05});b.scale.y=.8;b.position.set(px*s,py*s,pz*s);g.add(b);}
+  g.position.set(x,y,z);g.userData.baseY=y;scene.add(g);clouds.push(g);}
+cloud(-25,6,-18,1.3);cloud(26,13,-16,1.4);cloud(-24,20,-11,1.1);cloud(25,23,-7,1.1);cloud(0,27,-23,1.5);
+const tw=[];{const geo=new THREE.SphereGeometry(.08,8,8);for(let i=0;i<70;i++){const m=new THREE.Mesh(geo,mat('#d8c79a',{emi:'#d8c79a',ei:1}));
+  const a=Math.random()*6.28,r=6+Math.random()*16;m.position.set(Math.cos(a)*r,Math.random()*19,Math.sin(a)*r);m.userData.ph=Math.random()*6.28;scene.add(m);tw.push(m);}}
+
+const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));
+let bokeh=null;   /* heavy passes (AO/DoF) removed — sub-1fps on software/low-end GL; env + vignette carry the polish */
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.42,0.5,0.85));
+
+/* ================= LABELS ================= */
+const labelLayer=document.getElementById('labels');const labels=[];
+function mkLabel(html,cls,onClick){const el=document.createElement('div');el.className='lab '+cls;el.innerHTML=html;
+  el.addEventListener('click',e=>{e.stopPropagation();onClick();});labelLayer.appendChild(el);return el;}
+STATIONS.forEach((s,i)=>{const el = s.summit
+   ? mkLabel('Dr. Anam · Neurosurgeon','summit',()=>selectStation(s.key))
+   : mkLabel('<span class="num" style="background:'+s.c+'">'+s.n+'</span>'+s.title,'stn'+(s.cur?' cur':''),()=>selectStation(s.key));
+  const pr = s.cur?100 : (s.summit?85 : 62-i);
+  labels.push({el,obj:stationMeshes[s.key],off:s.summit?3.6:1.7,pr,always:!!(s.summit||s.cur)});});
+specMeshes.forEach((g,i)=>{const sp=SPECIALTIES[i];const el=mkLabel(sp.n,'spec',()=>selectSpec(i));el.style.opacity=0;labels.push({el,obj:g,off:.9,spec:true,pr:20,always:false});});
+
+/* ================= INTERACTION ================= */
+const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();let hovered=null,camMove=null,specView=false,selected=null,lastTouch=-99;
+function flyTo(pos,tgt,d=1.1){camMove={t:0,d,p0:camera.position.clone(),p1:pos.clone(),g0:controls.target.clone(),g1:tgt.clone()};controls.autoRotate=false;}
+function selectStation(key){const s=STATIONS.find(x=>x.key===key);const g=stationMeshes[key];const p=g.position;selected=key;
+  const wide=innerWidth>700;const off=wide?new V(3.4,1.4,2):new V(0,2.2,0.6);
+  flyTo(new V(p.x*0.45+9,p.y+(s.summit?4:3.5),p.z*0.45+12),p.clone().add(off));
+  renderStation(s);showPanel();}
+function selectSpec(i){const sp=SPECIALTIES[i];const g=specMeshes[i];const wp=new V();g.getWorldPosition(wp);selected='spec';
+  flyTo(new V(wp.x*0.5+8,wp.y+2,wp.z*0.5+11),wp.clone().add(new V(innerWidth>700?3:0,0,0)));
+  renderSpec(sp);showPanel();}
+function overview(){flyTo(CAM_HOME,TGT_HOME);specView=false;selected=null;hidePanel();}
+function showSpecView(){specView=true;selected=null;flyTo(new V(11,18.5,14),new V(0,15.8,0));}
+addEventListener('pointermove',e=>{pointer.x=e.clientX/innerWidth*2-1;pointer.y=-(e.clientY/innerHeight*2)+1;});
+let downXY=null;
+canvas.addEventListener('pointerdown',e=>{downXY=[e.clientX,e.clientY];lastTouch=clock.elapsedTime;});
+canvas.addEventListener('wheel',()=>{lastTouch=clock.elapsedTime;},{passive:true});
+canvas.addEventListener('pointerup',e=>{if(!downXY)return;const m=Math.hypot(e.clientX-downXY[0],e.clientY-downXY[1]);downXY=null;lastTouch=clock.elapsedTime;if(m>6)return;
+  ray.setFromCamera(pointer,camera);const h=ray.intersectObjects(hoverable,false)[0];if(!h)return;
+  if(h.object.userData.kind==='stn')selectStation(h.object.userData.key);else selectSpec(h.object.userData.idx);});
+
+/* ================= PANEL ================= */
+const panelEl=document.getElementById('panel'),pcard=document.getElementById('pcard');
+function showPanel(){panelEl.classList.add('show');}
+function hidePanel(){panelEl.classList.remove('show');}
+const li=a=>a.map(x=>'<li>'+x+'</li>').join('');
+function shade(hex,p){const c=COL(hex);return '#'+[c.r,c.g,c.b].map(v=>{v=Math.round((((p<0?0:1)-v)*Math.abs(p)/100+v)*255);return v.toString(16).padStart(2,'0');}).join('');}
+function renderBlocks(s){let b='';
+  for(const bl of (s.blocks||[])){
+    if(bl.type==='sem'){b+='<div class="sect">'+bl.h+'<span class="ln"></span></div><div class="sem">'+
+      '<div class="semcol"><h4>Fall</h4><ul>'+li(bl.fall)+'</ul></div><div class="semcol"><h4>Spring</h4><ul>'+li(bl.spring)+'</ul></div></div>';}
+    else if(bl.type==='check'){b+='<div class="sect">'+bl.h+'<span class="ln"></span></div><ul class="list">'+li(bl.items)+'</ul>';}
+    else if(bl.type==='dot'){b+='<div class="sect">'+bl.h+'<span class="ln"></span></div><ul class="list dot">'+li(bl.items)+'</ul>';}
+    else if(bl.type==='table'){b+='<div class="sect">'+bl.h+'<span class="ln"></span></div><table class="mtable">'+
+      bl.rows.map(r=>'<tr'+(r[2]?' class="hot"':'')+'><td>'+r[0]+'</td><td style="color:'+s.c+'">'+r[1]+'</td></tr>').join('')+'</table>';}
+    else if(bl.type==='note'){b+='<div class="notebox'+(bl.cls?' '+bl.cls:'')+'">'+bl.txt+'</div>';}}
+  return b;}
+function renderStation(s){
+  pcard.innerHTML='<div class="phead" style="background:linear-gradient(135deg,'+s.c+','+shade(s.c,-18)+')">'+
+    '<button class="pclose" data-ov>✕</button><div class="dt">'+s.date+'</div>'+
+    '<h2>'+(s.summit?'':s.n+'. ')+s.title+'</h2><span class="tg">'+s.tag+'</span></div>'+
+    '<div class="pbody"><p class="blurb">'+s.blurb+'</p>'+
+    (s.goal?'<div class="goalchip">'+s.goal+'</div>':'')+renderBlocks(s)+
+    (s.summit?'<button class="nb tg" id="goSpec" style="width:100%;justify-content:center;margin-top:14px">Explore the subspecialties</button>':'')+
+    (s.key==='soph'?'<button class="nb" id="goY2" style="width:100%;justify-content:center;margin-top:14px;background:linear-gradient(135deg,#2f7d6b,#0c5c50)">See the detailed month-by-month plan →</button>':'')+
+    '</div>';
+  pcard.querySelector('[data-ov]').onclick=overview;
+  const gs=pcard.querySelector('#goSpec');if(gs)gs.onclick=()=>showSpecView();
+  const gy=pcard.querySelector('#goY2');if(gy)gy.onclick=()=>openModal('mYear2');
+}
+function renderSpec(sp){
+  pcard.innerHTML='<div class="phead" style="background:linear-gradient(135deg,'+sp.cc+','+shade(sp.cc,-18)+')">'+
+    '<button class="pclose" data-ov>✕</button><div class="dt">Neurosurgery subspecialty</div>'+
+    '<h2>'+sp.n+'</h2><span class="tg">fellowship '+sp.fel+'</span></div>'+
+    '<div class="pbody"><p class="blurb">'+sp.d+'</p>'+
+    '<div class="notebox">Chosen in the final residency years (PGY-5–7). Every one of these starts from the same place: match neurosurgery first. The plan doesn’t change — the destination just gets more specific.</div></div>';
+  pcard.querySelector('[data-ov]').onclick=overview;
+}
+
+/* ================= YEAR 2 — MONTH BY MONTH ================= */
+const YEAR2=[
+ {m:'August 2026',sem:'Before Sem 3',tag:'SET UP',
+  ac:['Preview Organic Chemistry I — get ahead on nomenclature & mechanisms','Build a study system: same-day review + a weekly office-hours slot already booked'],
+  dl:['Nothing due yet — but note: FAFSA + PA State Grant open Oct 1','Read up on the summer programs so essays aren’t a surprise: CRISSP · SHPEP · NIH SIP · Penn SUIP · Drexel SURF'],
+  ex:['Lock a CCMA part-time job (Jefferson clinics / urgent care) to start in September, 6–10 hr/wk','Draft the lab-interest email; shortlist 5 PIs — TJU Biology + the Farber Institute for Neuroscience'],
+  win:'A job and a lab meeting scheduled before classes even start.'},
+ {m:'September 2026',sem:'Sem 3',tag:'SEM 3 BEGINS',
+  ac:['Courses: Organic Chemistry I + Lab · Anatomy & Physiology I · Biostatistics · Intro Psychology','Office hours from week 1 — not after a bad grade. Target 3.8–3.9.'],
+  dl:['Gather documents for FAFSA + PA State Grant (open Oct 1)'],
+  ex:['Start the CCMA clinic shifts — paid clinical hours begin counting toward med school','Join ONE research lab, 3–4 hr/wk — commit to stay for years, not weeks'],
+  win:'In a lab and earning by the end of the month.'},
+ {m:'October 2026',sem:'Sem 3',tag:'FIRST PROOF POINT',
+  ac:['First Organic Chem & A&P exams — aim A / A-. This is where the comeback becomes visible.'],
+  dl:['★ File FAFSA + PA State Grant (PHEAA) — Oct 1, 2027–28 cycle. Check the work-study box.'],
+  ex:['First neurosurgery shadowing at Jefferson Hospital for Neurosciences (on your campus)','Start a 30-min/day Python habit — research power + a BCI-era edge'],
+  win:'FAFSA filed early; first shadowing hours logged.'},
+ {m:'November 2026',sem:'Sem 3',tag:'ESSAYS OPEN',
+  ac:['Register Spring 2027: Organic Chem II + Lab · A&P II · Sociology · Neuroscience elective','Hold 3.8+ through midterms'],
+  dl:['Summer research apps OPEN — start essays now: CRISSP · SHPEP · NIH SIP · SR-EIP · Penn SUIP · Drexel SURF','Amgen Scholars opens ~Nov 1'],
+  ex:['Ask your PI: “what can I do that could become a poster or abstract?”','Request recommendation letters for summer programs — give writers 3+ weeks'],
+  win:'One personal statement drafted that you’ll reuse across every summer app.'},
+ {m:'December 2026',sem:'Sem 3',tag:'FINISH SEM 3 STRONG',
+  ac:['Finals — lock a 3.8–3.9. One clean semester already reframes the 3.07 story.'],
+  dl:['Finalize the summer applications (most are due Jan–Feb)','Confirm every recommender has what they need'],
+  ex:['Winter break = extra CCMA shifts: money and clinical hours stack fast'],
+  win:'Sem 3 GPA in the bag; summer apps ~80% done.'},
+ {m:'January 2027',sem:'Sem 4',tag:'SEM 4 + THE BLITZ',
+  ac:['Courses: Organic Chemistry II + Lab · A&P II · Sociology · Neuroscience elective'],
+  dl:['★ CHOP CRISSP — early Jan · $5,000 + free housing','★ Drexel SURF — ~Jan 12 · $3,000 stipend','★ APIA Scholars — Jan 15 (if AAPI heritage) · $2.5k–$20k','Penn SUIP essay in progress'],
+  ex:['Keep job + lab + shadowing steady — consistency is the whole game'],
+  win:'3–4 summer applications submitted.'},
+ {m:'February 2027',sem:'Sem 4',tag:'BLITZ FINISH LINE',
+  ac:['Midterms — protect the 3.8. Don’t let the apps dent the GPA.'],
+  dl:['★ Amgen Scholars — Feb 1 (needs 3.2 cum — a strong fall unlocks it)','★ Penn SUIP — ~Feb 1 · $5,500 + housing','★ Leadership Alliance SR-EIP — ~Feb 3 (you already meet the 3.0 floor)','★ SHPEP — Feb 5 · free + $1,000 (your LAST eligible year)','★ NIH SIP (NINDS) — mid-Feb · paid neuro lab'],
+  ex:['That’s 5+ shots on goal — you take the best offer and decline the rest'],
+  win:'Every summer application in. Now you wait for offers.'},
+ {m:'March 2027',sem:'Sem 4',tag:'OFFERS + HOME TURF',
+  ac:['Spring midterms — keep steady'],
+  dl:['★ TJU continuing-student aid deadline (~mid-March)','Ask the pre-med office about SKMC IDeA / early-assurance for TJU students — free question, home advantage','PA State Grant priority deadline is ~May 1 — don’t forget it'],
+  ex:['Summer offers arrive — compare on paid + neuroscience relevance'],
+  win:'Accept a paid, neuro-relevant research summer.'},
+ {m:'April 2027',sem:'Sem 4',tag:'FIRST RESEARCH ITEM',
+  ac:['Begin finals prep early to protect the GPA'],
+  dl:['Confirm summer logistics; politely decline the offers you won’t take'],
+  ex:['Present at TJU Undergraduate Research Day if your lab has data — your first “research item” for AMCAS'],
+  win:'Summer locked; a poster / abstract in motion.'},
+ {m:'May 2027',sem:'End of Sem 4',tag:'TWO SEMESTERS PROVEN',
+  ac:['Finals (Sem 4) → cumulative GPA ≈ 3.4, up from 3.07 — the upward line is now undeniable'],
+  ex:['Wrap lab work; thank your PI; arrange to continue into the summer / fall'],
+  win:'Two straight 3.8–3.9 semesters. The comeback is real and on the transcript.'},
+ {m:'Summer 2027',sem:'Jun–Aug',tag:'THE PAID RESEARCH SUMMER',summer:1,
+  ac:['Optional cushion: an EMT-B evening course — unlocks $17–20/hr ER-tech shifts + acute-care stories'],
+  dl:['Look ahead: junior-year scholarship windows open in the fall (Goldwater campus nomination ~Nov — only if you lean MD-PhD)'],
+  ex:['Full-time paid research: CRISSP / NIH SIP / SR-EIP / Drexel / Penn SUIP','Day one, ask: “what can I own here that becomes a poster or a publication?”','If it’s not residential, bank CCMA hours + income alongside'],
+  win:'A real research summer, income, and momentum straight into Junior year.'},
+];
+
+/* ================= NAV + MODALS ================= */
+const nav=document.getElementById('nav');
+nav.innerHTML='<button class="nb" data-act="now" style="background:linear-gradient(135deg,var(--c-primary),var(--c-primary-deep))"><span class="t">This Week</span></button>'+
+ '<button class="nb" data-act="y2" style="background:linear-gradient(135deg,#2f7d6b,#0c5c50)"><span class="t">Year 2 Plan</span></button>'+
+ '<button class="nb home" data-act="ov"><span class="t">Overview</span></button>'+
+ '<button class="nb tl" data-act="tl"><span class="t">Full Plan</span></button>'+
+ '<button class="nb mo" data-act="mo"><span class="t">Free Tuition</span></button>'+
+ '<button class="nb ra" data-act="ra"><span class="t">Radar</span></button>'+
+ '<button class="nb tg2 tg" data-act="tg"><span class="t">Targets</span></button>'+
+ '<button class="nb pl" data-act="pl"><span class="t">Master Plan</span></button>';
+nav.querySelectorAll('.nb').forEach(b=>b.onclick=()=>{const a=b.dataset.act;
+  if(a==='now')openModal('mNow');else if(a==='y2')openModal('mYear2');else if(a==='ov')overview();else if(a==='tl')openModal('mPlan');else if(a==='mo')openModal('mMoney');
+  else if(a==='ra')openModal('mRadar');else if(a==='pl')window.open('plan.html','_blank');else openModal('mTargets');});
+function openModal(id){document.getElementById(id).classList.add('show');}
+document.querySelectorAll('#hud [data-tg]').forEach(c=>c.onclick=()=>openModal('mTargets'));
+document.getElementById('hudCd').onclick=()=>openModal('mRadar');
+document.querySelectorAll('.modal').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close'))m.classList.remove('show');});});
+
+document.getElementById('tlBody').innerHTML=STATIONS.map(s=>{
+  let cs=s.blurb;
+  if(s.goal)cs+='<br><b>'+s.goal+'</b>';
+  return '<div class="tev"><div class="dot" style="background:'+s.c+'"></div><div class="dt">'+s.date+'</div>'+
+    '<h3>'+(s.summit?'':s.n+'. ')+s.title+'</h3><div class="cs">'+cs+'</div></div>';}).join('');
+document.getElementById('tgBody').innerHTML=TARGETS.map(t=>'<div class="scorerow"><div class="l">'+t[0]+'<small>'+t[2]+'</small></div><div class="v" style="color:var(--pink-d)">'+t[1]+'</div></div>').join('');
+document.getElementById('moBody').innerHTML=MONEY.map(m=>m.sec?'<h3 class="gsec">'+m.sec+'</h3>':
+  '<div class="schcard"><div class="top"><h4>'+m.n+'</h4><span class="amt">'+m.amt+'</span></div><div class="d">'+m.d+'</div></div>').join('');
+document.getElementById('raBody').innerHTML=RADAR.map(r=>'<div class="opcard"><div class="top"><h4>'+r.n+'</h4>'+
+  '<span class="chip" style="background:'+r.cc+'">'+r.chip+'</span></div><div class="when">'+r.when+'</div><div class="d">'+r.d+'</div></div>').join('');
+document.getElementById('y2Body').innerHTML=YEAR2.map(mo=>{
+  const li=x=>{const s=x.startsWith('★ ');return '<li'+(s?' class="star"':'')+'>'+(s?x.slice(2):x)+'</li>';};
+  const sec=(lab,arr,cls)=>arr&&arr.length?'<div class="mo2sec '+(cls||'')+'"><span class="mo2lab">'+lab+'</span><ul>'+arr.map(li).join('')+'</ul></div>':'';
+  return '<div class="mo2card'+(mo.summer?' summer':'')+'"><div class="mo2top"><h4>'+mo.m+
+    ' <span style="font-size:11px;color:var(--c-ink-soft);font-weight:700">· '+mo.sem+'</span></h4><span class="sem">'+mo.tag+'</span></div>'+
+    sec('Academics',mo.ac)+sec('Deadlines &amp; money',mo.dl,'dl')+sec('Do this month',mo.ex)+
+    '<div class="mo2win"><b>Win:</b> '+mo.win+'</div></div>';}).join('');
+
+/* ===== This Week + countdown + first-visit open ===== */
+const LS={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+document.getElementById('nowList').innerHTML=THISWEEK.map(([k,txt])=>
+  '<label class="twrow"><input type="checkbox" data-tw="'+k+'"><span class="twt">'+txt+'</span></label>').join('');
+document.querySelectorAll('#nowList input[data-tw]').forEach(cb=>{const key='tw_'+cb.dataset.tw;
+  cb.checked=LS.get(key)==='1';cb.addEventListener('change',()=>LS.set(key,cb.checked?'1':'0'));});
+document.getElementById('nowRadar').onclick=()=>{document.getElementById('mNow').classList.remove('show');openModal('mRadar');};
+const dLeft=Math.max(0,Math.ceil((BLITZ-new Date())/864e5));
+document.getElementById('hudDays').textContent=dLeft;
+document.getElementById('nowCd').textContent=dLeft+' days to the January blitz — CRISSP · SHPEP · NIH · SR-EIP · Penn SUIP · Drexel all land Jan–Feb 2027';
+setTimeout(()=>{if(!LS.get('seenNow')){openModal('mNow');LS.set('seenNow','1');}},1000);
+
+/* ================= LOOP ================= */
+const tmp=new V(),fwd=new V();const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);const dt=clock.getDelta(),t=clock.elapsedTime;
+  ray.setFromCamera(pointer,camera);const h=ray.intersectObjects(hoverable,false)[0];
+  const nk=h?(h.object.userData.key||('s'+h.object.userData.idx)):null;
+  if(nk!==hovered){hovered=nk;canvas.style.cursor=nk?'pointer':'grab';}
+  STATIONS.forEach((s,i)=>{const g=stationMeshes[s.key];if(!g)return;
+    if(g.userData.orb){g.userData.orb.rotation.y+=dt*.7;g.userData.orb.position.y=.9+Math.sin(t*1.05+i*.55)*.12;
+      if(s.cur){const p=1+Math.sin(t*2.1)*.1;g.userData.orb.scale.setScalar(p);g.userData.orb.material.emissiveIntensity=.55+Math.abs(Math.sin(t*2.1))*.5;}}
+    if(g.userData.crown)g.userData.crown.rotation.y+=dt*.45;});
+  specRing.rotation.y+=dt*.08;specMeshes.forEach((g,i)=>{g.userData.gem.rotation.y+=dt*.9;g.position.y=Math.sin(t*.8+i)*0.5;});
+  if(avatar)avatar.position.y=Math.sin(t*1.5)*.05;
+  clouds.forEach((c,i)=>{c.position.y=c.userData.baseY+Math.sin(t*.25+i)*.4;});
+  tw.forEach(s=>s.material.emissiveIntensity=.4+Math.abs(Math.sin(t*2+s.userData.ph))*1.1);
+  if(camMove){camMove.t+=dt/camMove.d;const e=Math.min(camMove.t,1),k=1-Math.pow(1-e,3);
+    camera.position.lerpVectors(camMove.p0,camMove.p1,k);controls.target.lerpVectors(camMove.g0,camMove.g1,k);if(e>=1)camMove=null;}
+  const modalOpen=!!document.querySelector('.modal.show'),panelOpen=panelEl.classList.contains('show');
+  controls.autoRotate=(clock.elapsedTime-lastTouch>4)&&!camMove&&!panelOpen&&!modalOpen&&!selected;
+  controls.update();
+  if(bokeh)bokeh.uniforms.focus.value=camera.position.distanceTo(controls.target);
+  camera.getWorldDirection(fwd);
+  const cxp=camera.position;
+  const items=labels.map(l=>{l.obj.getWorldPosition(tmp);const wp=tmp.clone();wp.y+=l.off;
+    const dir=wp.clone().sub(cxp);const dist=dir.length();const front=dir.dot(fwd)>0;
+    const sv=wp.clone().project(camera);const on=sv.x>-1.15&&sv.x<1.15&&sv.y>-1.15&&sv.y<1.15;
+    return {l,dist,ok:front&&on&&(!l.spec||specView),sx:(sv.x*.5+.5)*innerWidth,sy:(-sv.y*.5+.5)*innerHeight};});
+  items.sort((a,b)=>(b.l.pr-a.l.pr)||(a.dist-b.dist));
+  const shown=[];
+  for(const it of items){const l=it.l;
+    if(!it.ok){l.el.style.opacity=0;l.el.style.pointerEvents='none';continue;}
+    const w=l.w0||(l.w0=l.el.offsetWidth||90),h=l.h0||(l.h0=l.el.offsetHeight||26);
+    const sc=THREE.MathUtils.clamp(1.08-(it.dist-13)/40,.72,1.08);const bw=w*sc,bh=h*sc;
+    let hide=false;
+    if(!l.always)for(const s of shown){if(Math.abs(it.sx-s.x)<(bw+s.w)*.46&&Math.abs(it.sy-s.y)<(bh+s.h)*.55){hide=true;break;}}
+    if(hide){l.el.style.opacity=0;l.el.style.pointerEvents='none';continue;}
+    const op=l.spec?.95:THREE.MathUtils.clamp(1.15-(it.dist-16)/46,.5,1);
+    l.el.style.opacity=op;l.el.style.pointerEvents='auto';
+    l.el.style.transform='translate(-50%,-50%) scale('+sc.toFixed(3)+')';
+    l.el.style.left=it.sx+'px';l.el.style.top=it.sy+'px';
+    shown.push({x:it.sx,y:it.sy,w:bw,h:bh});}
+  composer.render();
+}
+animate();
+setTimeout(()=>document.getElementById('load').classList.add('gone'),500);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);});
+</script>
+</body>
+</html>
