@@ -189,6 +189,35 @@
   #load p{font-family:'Fraunces';color:var(--pink-d);margin-top:15px;font-weight:700}
   @keyframes spin{to{transform:rotate(360deg)}}
 
+  /* === PLAN HUB TABS === */
+  .tabbar{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 14px;background:var(--c-surface-tint);border-radius:14px;padding:5px}
+  .tab{flex:1;min-width:120px;border:none;cursor:pointer;font-family:'Manrope';font-weight:800;font-size:12.5px;
+    color:var(--c-ink-soft);background:transparent;border-radius:10px;padding:9px 10px;transition:all .15s;white-space:nowrap}
+  .tab:hover{color:var(--c-primary-deep)}
+  .tab.on{background:#fff;color:var(--c-primary-deep);box-shadow:var(--shadow-sm)}
+  .tpane{display:none}.tpane.on{display:block}
+  .planlink{display:block;margin-top:14px;text-align:center;text-decoration:none;font-weight:800;font-size:13px;
+    color:#fff;background:linear-gradient(135deg,var(--c-primary),var(--c-primary-deep));border-radius:13px;padding:12px;box-shadow:var(--glow-primary)}
+  /* === DEADLINE BANNER === */
+  .ranext{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--c-primary),var(--c-primary-deep));
+    color:#fff;border-radius:14px;padding:12px 15px;margin-bottom:14px;box-shadow:var(--glow-primary)}
+  .ranext .dnum{font-family:'Fraunces';font-size:24px;line-height:1;min-width:56px;text-align:center}
+  .ranext .dnum small{display:block;font-family:'Manrope';font-size:9.5px;font-weight:800;letter-spacing:.5px;opacity:.9}
+  .ranext .dtxt{font-weight:700;font-size:13px;line-height:1.35}
+  /* === JOURNEY RAIL (desktop) === */
+  #rail{position:fixed;left:16px;top:50%;transform:translateY(-50%);z-index:15;width:196px;
+    background:var(--glass);backdrop-filter:blur(12px);border:1.5px solid var(--glass-b);border-radius:18px;
+    padding:10px 8px;box-shadow:0 12px 34px rgba(40,110,95,.18)}
+  #rail .rhead{font-family:'Fraunces';font-size:12.5px;font-weight:700;color:var(--ink2);padding:2px 8px 7px;letter-spacing:.2px}
+  .ri{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:11px;cursor:pointer;transition:background .12s}
+  .ri:hover{background:rgba(255,255,255,.85)}
+  .ri .rnum{width:20px;height:20px;border-radius:50%;color:#fff;display:grid;place-items:center;
+    font-family:'Manrope';font-weight:800;font-size:10.5px;flex:none}
+  .ri .rt{font-family:'Manrope';font-weight:700;font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ri.now .rt:after{content:"· you";color:var(--c-primary);font-weight:800;margin-left:4px}
+  .ri.on{background:#fff;box-shadow:var(--shadow-sm)}
+  @media (max-width:980px){#rail{display:none}}
+
   /* serif = display headings only; sans for controls, map labels, numbers */
   .nb,.lab.stn,.lab.spec,.lab.summit,#hud .h b{font-family:'Manrope',system-ui,sans-serif}
   @media (max-width:640px){
@@ -205,9 +234,9 @@
 <body>
 <canvas id="c"></canvas>
 <div id="vig"></div>
-<div id="vig"></div>
 <svg id="leaders"></svg>
 <div id="labels"></div>
+<nav id="rail" aria-label="Journey steps"><div class="rhead">The journey</div><div id="railList"></div></nav>
 
 <div id="title"><div class="badge"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#fff" d="M10 3.2h4a1 1 0 0 1 1 1V9h4.8a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H15v4.8a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V15H4.2a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1H9V4.2a1 1 0 0 1 1-1Z"/></svg></div>
   <div><h1 class="fh">Anam's Road to Neurosurgeon</h1><p>the optimized path · future Dr. Oo</p></div></div>
@@ -222,22 +251,38 @@
 <div id="nav"></div>
 <div id="panel"><div class="card" id="pcard"></div></div>
 
-<div class="modal" id="mPlan"><div class="sheet"><button class="x" data-close>✕</button>
-  <h2 class="fh">The Whole Plan, in Order</h2><p class="sub">Straight-through dates shown; the "power gap year" (recommended if GPA &lt; 3.55 at application) shifts everything after 2028 by one year.</p>
-  <div id="tlBody" class="tline"></div></div></div>
+<div class="modal" id="mHub"><div class="sheet"><button class="x" data-close>✕</button>
+  <h2 class="fh">The Plan</h2><p class="sub">Everything in one place — from this year's months to the whole eleven-year road, and the numbers that define it.</p>
+  <div class="tabbar" id="hubTabs">
+    <button class="tab on" data-pane="y2">Year 2 · month by month</button>
+    <button class="tab" data-pane="tl">The whole road</button>
+    <button class="tab" data-pane="tg">Targets</button>
+  </div>
+  <div class="tpane on" data-pane="y2">
+    <p class="sub" style="margin:2px 0 12px">Sophomore year — semesters 3 &amp; 4, Aug 2026 → summer 2027. <b style="color:var(--c-warn)">★</b> = hard deadline; miss it and it's gone for a year.</p>
+    <div id="y2Body"></div>
+    <div class="notebox">This is the one year you fully control. Nail the GPA, get into a lab, work the CCMA job, and win one paid research summer — everything after is built on this.</div>
+  </div>
+  <div class="tpane" data-pane="tl">
+    <p class="sub" style="margin:2px 0 12px">Straight-through dates; the "power gap year" (recommended if GPA &lt; 3.55 at application) shifts everything after 2028 by one year. Tap any step on the 3D map for full detail.</p>
+    <div id="tlBody" class="tline"></div>
+  </div>
+  <div class="tpane" data-pane="tg">
+    <p class="sub" style="margin:2px 0 12px">From today to the neurosurgery match.</p>
+    <div id="tgBody" class="scoregrid"></div>
+    <div class="notebox">Sources: AAMC matriculant data, NRMP Charting Outcomes 2024, Doximity 2025. Undergrad GPA gets you <b>into</b> med school — after that the neurosurgery race resets and Step 2 CK + research decide everything.</div>
+  </div>
+  <a class="planlink" href="plan.html" target="_blank" rel="noopener">Read the full written Master Plan — courses, jobs, scholarships, email templates →</a>
+</div></div>
 
 <div class="modal" id="mMoney"><div class="sheet"><button class="x" data-close>✕</button>
-  <h2 class="fh">The Tuition-Free Playbook</h2><p class="sub">How to become a neurosurgeon owing $0 for medical school. Apply to ALL of Tier 1–2 — each is a lottery ticket worth ~$260,000.</p>
+  <h2 class="fh">Paying for Med School</h2><p class="sub">The $0 playbook. Apply to ALL of Tier 1–2 — each is a lottery ticket worth ~$260,000.</p>
   <div id="moBody"></div></div></div>
 
 <div class="modal" id="mRadar"><div class="sheet"><button class="x" data-close>✕</button>
-  <h2 class="fh">Don't-Miss Radar</h2><p class="sub">The "I wish I knew about this earlier" list — every dated opportunity on her runway, honestly labeled.</p>
+  <h2 class="fh">Deadlines &amp; Opportunities</h2><p class="sub">The "wish I knew earlier" list — every dated door on her runway, honestly labeled and grouped by when it matters.</p>
+  <div id="raNext"></div>
   <div id="raBody"></div></div></div>
-
-<div class="modal" id="mTargets"><div class="sheet" style="max-width:500px"><button class="x" data-close>✕</button>
-  <h2 class="fh">Every Number That Matters</h2><p class="sub">From today to the neurosurgery match.</p>
-  <div id="tgBody" class="scoregrid"></div>
-  <div class="notebox">Sources: AAMC matriculant data, NRMP Charting Outcomes 2024, Doximity 2025. Undergrad GPA gets you <b>into</b> med school — after that the neurosurgery race resets and Step 2 CK + research decide everything.</div></div></div>
 
 <div class="modal" id="mNow"><div class="sheet" style="max-width:470px"><button class="x" data-close>✕</button>
   <h2 class="fh">This Week, Anam</h2><p class="sub">Your whole comeback is just the next small action, repeated. Check these off — they save automatically on this device.</p>
@@ -246,11 +291,6 @@
   <div id="nowCd" class="cd"></div>
   <div style="text-align:center;margin-top:12px"><button class="nb ra" id="nowRadar" style="display:inline-flex">See every dated deadline →</button></div>
 </div></div>
-
-<div class="modal" id="mYear2"><div class="sheet"><button class="x" data-close>✕</button>
-  <h2 class="fh">Year 2 · Month by Month</h2><p class="sub">Sophomore year — semesters 3 &amp; 4, Aug 2026 → summer 2027. Your detailed runway. <b style="color:var(--c-warn)">★</b> = a hard deadline; miss it and it's gone for a year.</p>
-  <div id="y2Body"></div>
-  <div class="notebox">This is the one year you fully control. Nail the GPA, get into a lab, work the CCMA job, and win one paid research summer — everything after is built on this.</div></div></div>
 
 <div id="load"><div style="text-align:center"><div class="ring"></div><p>building your road…</p></div></div>
 
@@ -414,26 +454,29 @@ const MONEY=[
  {sec:'Boosters for the application itself'},
  {n:'AAMC Fee Assistance Program',amt:'~$2,000+ of value',d:'MCAT $355→$145, official prep free ($390), ~$1,068 of AMCAS fees waived, MSAR free. Income-based (≤400% federal poverty line — parents’ info required under age 26). Apply the January before the MCAT; never retroactive.'},
 ];
+/* g: y1 = this school year · y2 = applying era · med = med school & beyond
+   due: only FIRM dates (powers the countdown banner — no fabricated precision) */
 const RADAR=[
- {when:'Sep 2026',chip:'DO NOW',cc:'#0f9d6c',n:'Join a research lab + ask about SKMC IDeA',d:'Email 5 PIs at TJU / Farber Institute this month — labs fill in September. Same week: ask the pre-med office what SKMC early-assurance or linkage options exist for TJU undergrads (free question, home-field advantage).'},
- {when:'Fall 2026',chip:'DO NOW',cc:'#0f9d6c',n:'Start the CCMA-powered clinical job',d:'6–10 hrs/wk paid patient care at Jefferson clinics. By application day this quietly becomes 300+ hours — most applicants scramble for what she already has.'},
- {when:'Due early Jan 2027',chip:'APPLY',cc:'#5658d8',n:'CHOP CRISSP — summer research',d:'10 weeks at Children’s Hospital of Philadelphia: $5,000 stipend + FREE housing, 30 spots. Pediatric neuro labs exist — a dream first research summer.'},
- {when:'Due Feb 5 2027',chip:'APPLY',cc:'#5658d8',n:'SHPEP — free summer program + $1,000',d:'Requires ≤60 completed credits and ≥2.5 GPA — she qualifies RIGHT NOW and this is her last realistic window. Housing, meals, travel covered. Alumni network for life.'},
- {when:'Due mid-Feb 2027',chip:'APPLY',cc:'#5658d8',n:'NIH Summer Internship (SIP)',d:'Paid summer in an NIH lab (NINDS = the neuroscience institute). Apply to this AND CRISSP AND SHPEP — take the best offer.'},
- {when:'Due Feb 1 2027',chip:'STRETCH',cc:'#b8894e',n:'Amgen Scholars',d:'Needs a 3.2 cumulative — one strong fall semester (3.85+) makes her eligible. Motivation with a deadline attached.'},
- {when:'Due ~Feb 3 2027',chip:'APPLY',cc:'#5658d8',n:'Leadership Alliance SR-EIP',d:'Fully paid 10-week research summer (stipend + housing + travel) at top universities. Needs 3.0+ — she is ALREADY eligible. Frame an honest MD-PhD curiosity.'},
- {when:'Due ~Feb 1 2027',chip:'APPLY',cc:'#5658d8',n:'Penn Med SUIP — flagship, minutes away',d:'Perelman School of Medicine Summer Undergraduate Internship: ~$5,500 stipend + housing, 10 weeks, one SEPTA ride from campus. No hard GPA cutoff beyond good standing. Confirm the exact 2027 date when the page reopens in fall 2026.'},
- {when:'Due ~mid-Jan 2027',chip:'APPLY',cc:'#5658d8',n:'Drexel COM SURF — local + welcoming',d:'Drexel Summer Undergraduate Research Fellowship: ~$3,000 stipend, ~9 weeks, open to rising sophomores at any college. Right in Philadelphia — an easy, high-yield first research summer to pair with the others.'},
- {when:'Due ~Jan 15 2027',chip:'MONEY',cc:'#0f9d6c',n:'APIA Scholars — need-based, up to $20k',d:'For AAPI students (first-gen / financial need prioritized). If Anam’s heritage qualifies this is one of the highest-ROI scholarships on the runway — one honest comeback essay. File FAFSA first so need is documented.'},
- {when:'Watch Sep–Oct 2026',chip:'WATCH',cc:'#9a6a86',n:'Philly research wave: Wistar · Monell · Fox Chase',d:'These open ~October 2026 for January-2027 deadlines. Bookmark the Wistar (biomedical), Monell (chemical-senses/neuro-adjacent) and Fox Chase pages now, and check them the first week of October so none slip past.'},
- {when:'Nov 2027',chip:'STRETCH',cc:'#b8894e',n:'Goldwater Scholarship — only on the MD-PhD lean',d:'$7,500/yr, the most prestigious undergrad STEM award. Pre-meds qualify ONLY with research-career (MD-PhD) intent. Needs ~3.75+ by junior fall + 12 months in one lab + a PI champion. Campus nomination first.'},
- {when:'Jan 2027',chip:'SKIP',cc:'#b03a48',n:'Mount Sinai FlexMed — mathematically out',d:'Hard 3.6 GPA floor; even straight 4.0s reach only ~3.4 by the deadline. Knowing what NOT to chase protects the hours that matter. Zero guilt.'},
- {when:'Jan 2028',chip:'MONEY',cc:'#0f9d6c',n:'AAMC Fee Assistance Program',d:'Apply BEFORE registering for the MCAT — $2,000+ in benefits, never retroactive. Mark it next to the MCAT registration date.'},
- {when:'May 1 → early Jun 2028',chip:'CRITICAL',cc:'#0c5c50',n:'AMCAS Day-One submission',d:'(Or June 2029 on the power-gap-year plan.) Early submission is the single cheapest admissions advantage that exists.'},
- {when:'Fall 2028 (if gap year)',chip:'APPLY',cc:'#5658d8',n:'NIH Postbac IRTA — the power year',d:'Paid full-time neuro research year at NIH between college and med school. The classic "wish I’d known" program — it converts a 3.5x file into a research-heavy one.'},
- {when:'2029/30 · M1 week one',chip:'MED SCHOOL',cc:'#2f7d8a',n:'AANS student chapter + neurosurgery mentor',d:'The match clock starts on day one of M1. Interest group, mentor, first case report before winter break.'},
- {when:'2031–32 · M3',chip:'MED SCHOOL',cc:'#2f7d8a',n:'Research-year decision + away rotations',d:'If research items < 15, take the dedicated research year (~⅓ of matched applicants do). Book 2–3 away sub-Is a year ahead.'},
- {when:'Ongoing',chip:'WATCH',cc:'#9a6a86',n:'The tuition-free wave + the BCI era',d:'Bloomberg & Gottesman’s $1B gifts started a philanthropy race — more schools may flip to free before 2029; re-check the list every cycle. Meanwhile BCI/neurotech is exploding: her Python + neuro research habit now is a moat for 2040s neurosurgery.'},
+ {g:'y1',when:'Sep 2026',chip:'DO NOW',cc:'#0f9d6c',n:'Join a research lab + ask about SKMC IDeA',d:'Email 5 PIs at TJU / Farber Institute this month — labs fill in September. Same week: ask the pre-med office what SKMC early-assurance or linkage options exist for TJU undergrads (free question, home-field advantage).'},
+ {g:'y1',when:'Fall 2026',chip:'DO NOW',cc:'#0f9d6c',n:'Start the CCMA-powered clinical job',d:'6–10 hrs/wk paid patient care at Jefferson clinics. By application day this quietly becomes 300+ hours — most applicants scramble for what she already has.'},
+ {g:'y1',when:'Opens Oct 1 2026',due:'2026-10-01',chip:'MONEY',cc:'#0f9d6c',n:'FAFSA + PA State Grant — file day one',d:'The 2027–28 FAFSA opens Oct 1. File in week one and check the work-study box — it unlocks need-based aid, PHEAA money, paid work-study lab jobs, and documents the need that scholarships like APIA look for.'},
+ {g:'y1',when:'Watch Sep–Oct 2026',chip:'WATCH',cc:'#9a6a86',n:'Philly research wave: Wistar · Monell · Fox Chase',d:'These open ~October 2026 for January-2027 deadlines. Bookmark the Wistar (biomedical), Monell (chemical-senses/neuro-adjacent) and Fox Chase pages now, and check them the first week of October so none slip past.'},
+ {g:'y1',when:'Due early Jan 2027',chip:'APPLY',cc:'#5658d8',n:'CHOP CRISSP — summer research',d:'10 weeks at Children’s Hospital of Philadelphia: $5,000 stipend + FREE housing, 30 spots. Pediatric neuro labs exist — a dream first research summer.'},
+ {g:'y1',when:'Due ~mid-Jan 2027',chip:'APPLY',cc:'#5658d8',n:'Drexel COM SURF — local + welcoming',d:'Drexel Summer Undergraduate Research Fellowship: ~$3,000 stipend, ~9 weeks, open to rising sophomores at any college. Right in Philadelphia — an easy, high-yield first research summer to pair with the others.'},
+ {g:'y1',when:'Due ~Jan 15 2027',chip:'MONEY',cc:'#0f9d6c',n:'APIA Scholars — need-based, up to $20k',d:'For AAPI students (first-gen / financial need prioritized). If Anam’s heritage qualifies this is one of the highest-ROI scholarships on the runway — one honest comeback essay. File FAFSA first so need is documented.'},
+ {g:'y1',when:'Jan 2027',chip:'SKIP',cc:'#b03a48',n:'Mount Sinai FlexMed — mathematically out',d:'Hard 3.6 GPA floor; even straight 4.0s reach only ~3.4 by the deadline. Knowing what NOT to chase protects the hours that matter. Zero guilt.'},
+ {g:'y1',when:'Due ~Feb 1 2027',chip:'APPLY',cc:'#5658d8',n:'Penn Med SUIP — flagship, minutes away',d:'Perelman School of Medicine Summer Undergraduate Internship: ~$5,500 stipend + housing, 10 weeks, one SEPTA ride from campus. No hard GPA cutoff beyond good standing. Confirm the exact 2027 date when the page reopens in fall 2026.'},
+ {g:'y1',when:'Due Feb 1 2027',due:'2027-02-01',chip:'STRETCH',cc:'#b8894e',n:'Amgen Scholars',d:'Needs a 3.2 cumulative — one strong fall semester (3.85+) makes her eligible. Motivation with a deadline attached.'},
+ {g:'y1',when:'Due ~Feb 3 2027',chip:'APPLY',cc:'#5658d8',n:'Leadership Alliance SR-EIP',d:'Fully paid 10-week research summer (stipend + housing + travel) at top universities. Needs 3.0+ — she is ALREADY eligible. Frame an honest MD-PhD curiosity.'},
+ {g:'y1',when:'Due Feb 5 2027',due:'2027-02-05',chip:'APPLY',cc:'#5658d8',n:'SHPEP — free summer program + $1,000',d:'Requires ≤60 completed credits and ≥2.5 GPA — she qualifies RIGHT NOW and this is her last realistic window. Housing, meals, travel covered. Alumni network for life.'},
+ {g:'y1',when:'Due mid-Feb 2027',chip:'APPLY',cc:'#5658d8',n:'NIH Summer Internship (SIP)',d:'Paid summer in an NIH lab (NINDS = the neuroscience institute). Apply to this AND CRISSP AND SHPEP — take the best offer.'},
+ {g:'y2',when:'Nov 2027',chip:'STRETCH',cc:'#b8894e',n:'Goldwater Scholarship — only on the MD-PhD lean',d:'$7,500/yr, the most prestigious undergrad STEM award. Pre-meds qualify ONLY with research-career (MD-PhD) intent. Needs ~3.75+ by junior fall + 12 months in one lab + a PI champion. Campus nomination first.'},
+ {g:'y2',when:'Jan 2028',chip:'MONEY',cc:'#0f9d6c',n:'AAMC Fee Assistance Program',d:'Apply BEFORE registering for the MCAT — $2,000+ in benefits, never retroactive. Mark it next to the MCAT registration date.'},
+ {g:'y2',when:'May 1 → early Jun 2028',chip:'CRITICAL',cc:'#0c5c50',n:'AMCAS Day-One submission',d:'(Or June 2029 on the power-gap-year plan.) Early submission is the single cheapest admissions advantage that exists.'},
+ {g:'y2',when:'Fall 2028 (if gap year)',chip:'APPLY',cc:'#5658d8',n:'NIH Postbac IRTA — the power year',d:'Paid full-time neuro research year at NIH between college and med school. The classic "wish I’d known" program — it converts a 3.5x file into a research-heavy one.'},
+ {g:'med',when:'2029/30 · M1 week one',chip:'MED SCHOOL',cc:'#2f7d8a',n:'AANS student chapter + neurosurgery mentor',d:'The match clock starts on day one of M1. Interest group, mentor, first case report before winter break.'},
+ {g:'med',when:'2031–32 · M3',chip:'MED SCHOOL',cc:'#2f7d8a',n:'Research-year decision + away rotations',d:'If research items < 15, take the dedicated research year (~⅓ of matched applicants do). Book 2–3 away sub-Is a year ahead.'},
+ {g:'med',when:'Ongoing',chip:'WATCH',cc:'#9a6a86',n:'The tuition-free wave + the BCI era',d:'Bloomberg & Gottesman’s $1B gifts started a philanthropy race — more schools may flip to free before 2029; re-check the list every cycle. Meanwhile BCI/neurotech is exploding: her Python + neuro research habit now is a moat for 2040s neurosurgery.'},
 ];
 const THISWEEK=[
  ['lab','Email 5 research labs (TJU + Farber Institute) — reply to whoever answers, join ONE and stay for years'],
@@ -547,6 +590,8 @@ let avatar;(function(){const a=new THREE.Group();a.position.set(0,0,4.6);a.rotat
   for(const sx of[-.2,.2]){const e=ball(.08,mat('#2a1a24',{rough:.3}));e.position.set(sx,2.22,-.54);a.add(e);
     const bl=cyl(.1,.1,.02,mat('#d99a86',{emi:'#d99a86',ei:.3}),14);bl.rotation.x=Math.PI/2;bl.position.set(sx*1.6,2.06,-.5);a.add(bl);}
   const st=torus(.43,.055,mat('#aeb6c2',{metal:.6,rough:.3}));st.position.set(0,1.55,-.02);a.add(st);
+  /* de-chibi: shrink the head cluster ~12% toward its pivot (y≈2.2) for young-adult proportions */
+  a.children.forEach(ch=>{if(ch.position.y>1.85){ch.scale.multiplyScalar(.88);ch.position.y=2.2+(ch.position.y-2.2)*.88;}});
   world.add(a);avatar=a;})();
 
 const clouds=[];function cloud(x,y,z,s){const g=new THREE.Group();
@@ -568,7 +613,7 @@ STATIONS.forEach((s,i)=>{const el = s.summit
    ? mkLabel('Dr. Anam · Neurosurgeon','summit',()=>selectStation(s.key))
    : mkLabel('<span class="num" style="background:'+s.c+'">'+s.n+'</span>'+s.title,'stn'+(s.cur?' cur':''),()=>selectStation(s.key));
   const pr = s.cur?100 : (s.summit?85 : 62-i);
-  labels.push({el,obj:stationMeshes[s.key],off:s.summit?3.6:1.7,pr,always:!!(s.summit||s.cur)});});
+  labels.push({el,obj:stationMeshes[s.key],off:s.summit?3.6:(s.key==='wake'?2.6:1.7),pr,always:!!(s.summit||s.cur)});});
 specMeshes.forEach((g,i)=>{const sp=SPECIALTIES[i];const el=mkLabel(sp.n,'spec',()=>selectSpec(i));el.style.opacity=0;labels.push({el,obj:g,off:.9,spec:true,pr:20,always:false});});
 
 /* ================= INTERACTION ================= */
@@ -577,11 +622,11 @@ function flyTo(pos,tgt,d=1.1){camMove={t:0,d,p0:camera.position.clone(),p1:pos.c
 function selectStation(key){const s=STATIONS.find(x=>x.key===key);const g=stationMeshes[key];const p=g.position;selected=key;
   const wide=innerWidth>700;const off=wide?new V(3.4,1.4,2):new V(0,2.2,0.6);
   flyTo(new V(p.x*0.45+9,p.y+(s.summit?4:3.5),p.z*0.45+12),p.clone().add(off));
-  renderStation(s);showPanel();}
+  renderStation(s);showPanel();markRail(key);}
 function selectSpec(i){const sp=SPECIALTIES[i];const g=specMeshes[i];const wp=new V();g.getWorldPosition(wp);selected='spec';
   flyTo(new V(wp.x*0.5+8,wp.y+2,wp.z*0.5+11),wp.clone().add(new V(innerWidth>700?3:0,0,0)));
   renderSpec(sp);showPanel();}
-function overview(){flyTo(CAM_HOME,TGT_HOME);specView=false;selected=null;hidePanel();}
+function overview(){flyTo(CAM_HOME,TGT_HOME);specView=false;selected=null;hidePanel();markRail('');}
 function showSpecView(){specView=true;selected=null;flyTo(new V(11,18.5,14),new V(0,15.8,0));}
 addEventListener('pointermove',e=>{pointer.x=e.clientX/innerWidth*2-1;pointer.y=-(e.clientY/innerHeight*2)+1;});
 let downXY=null;
@@ -618,7 +663,7 @@ function renderStation(s){
     '</div>';
   pcard.querySelector('[data-ov]').onclick=overview;
   const gs=pcard.querySelector('#goSpec');if(gs)gs.onclick=()=>showSpecView();
-  const gy=pcard.querySelector('#goY2');if(gy)gy.onclick=()=>openModal('mYear2');
+  const gy=pcard.querySelector('#goY2');if(gy)gy.onclick=()=>openHub('y2');
 }
 function renderSpec(sp){
   pcard.innerHTML='<div class="phead" style="background:linear-gradient(135deg,'+sp.cc+','+shade(sp.cc,-18)+')">'+
@@ -689,19 +734,38 @@ const YEAR2=[
 
 /* ================= NAV + MODALS ================= */
 const nav=document.getElementById('nav');
+/* 5 destinations, grouped by intent: act · plan · fund · dates · orient */
 nav.innerHTML='<button class="nb" data-act="now" style="background:linear-gradient(135deg,var(--c-primary),var(--c-primary-deep))"><span class="t">This Week</span></button>'+
- '<button class="nb" data-act="y2" style="background:linear-gradient(135deg,#2f7d6b,#0c5c50)"><span class="t">Year 2 Plan</span></button>'+
- '<button class="nb home" data-act="ov"><span class="t">Overview</span></button>'+
- '<button class="nb tl" data-act="tl"><span class="t">Full Plan</span></button>'+
- '<button class="nb mo" data-act="mo"><span class="t">Free Tuition</span></button>'+
- '<button class="nb ra" data-act="ra"><span class="t">Radar</span></button>'+
- '<button class="nb tg2 tg" data-act="tg"><span class="t">Targets</span></button>'+
- '<button class="nb pl" data-act="pl"><span class="t">Master Plan</span></button>';
+ '<button class="nb tl" data-act="hub"><span class="t">The Plan</span></button>'+
+ '<button class="nb mo" data-act="mo"><span class="t">Money</span></button>'+
+ '<button class="nb ra" data-act="ra"><span class="t">Deadlines</span></button>'+
+ '<button class="nb home" data-act="ov"><span class="t">Map</span></button>';
 nav.querySelectorAll('.nb').forEach(b=>b.onclick=()=>{const a=b.dataset.act;
-  if(a==='now')openModal('mNow');else if(a==='y2')openModal('mYear2');else if(a==='ov')overview();else if(a==='tl')openModal('mPlan');else if(a==='mo')openModal('mMoney');
-  else if(a==='ra')openModal('mRadar');else if(a==='pl')window.open('plan.html','_blank');else openModal('mTargets');});
+  if(a==='now')openModal('mNow');else if(a==='hub')openHub('y2');else if(a==='mo')openModal('mMoney');
+  else if(a==='ra')openModal('mRadar');else overview();});
+
+/* Plan-hub tabs */
+function openHub(pane){openModal('mHub');if(pane)setHubTab(pane);}
+function setHubTab(pane){
+  document.querySelectorAll('#hubTabs .tab').forEach(t=>t.classList.toggle('on',t.dataset.pane===pane));
+  document.querySelectorAll('#mHub .tpane').forEach(p=>p.classList.toggle('on',p.dataset.pane===pane));}
+document.querySelectorAll('#hubTabs .tab').forEach(t=>t.onclick=()=>setHubTab(t.dataset.pane));
+
+/* Esc closes any overlay */
+addEventListener('keydown',e=>{if(e.key==='Escape'){let hit=false;
+  document.querySelectorAll('.modal.show').forEach(m=>{m.classList.remove('show');hit=true;});
+  if(!hit&&panelEl.classList.contains('show'))overview();}});
+
+/* Journey rail — numbered table of contents for the 3D climb (desktop) */
+const RAILNAMES={wake:'Freshman — done',soph:'Sophomore year',jr:'Junior year',mcat:'The MCAT',fork:'The Fork',
+  apply:'Apply smart',m12:'Med school M1–M2',m34:'M3–M4 · Step 2',res:'Residency',doc:'Neurosurgeon'};
+const railList=document.getElementById('railList');
+railList.innerHTML=STATIONS.map(s=>'<div class="ri'+(s.cur?' now':'')+'" data-k="'+s.key+'">'+
+  '<span class="rnum" style="background:'+s.c+'">'+(s.summit?'★':s.n)+'</span><span class="rt">'+RAILNAMES[s.key]+'</span></div>').join('');
+railList.querySelectorAll('.ri').forEach(r=>r.onclick=()=>selectStation(r.dataset.k));
+function markRail(key){railList.querySelectorAll('.ri').forEach(r=>r.classList.toggle('on',r.dataset.k===key));}
 function openModal(id){document.getElementById(id).classList.add('show');}
-document.querySelectorAll('#hud [data-tg]').forEach(c=>c.onclick=()=>openModal('mTargets'));
+document.querySelectorAll('#hud [data-tg]').forEach(c=>c.onclick=()=>openHub('tg'));
 document.getElementById('hudCd').onclick=()=>openModal('mRadar');
 document.querySelectorAll('.modal').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close'))m.classList.remove('show');});});
 
@@ -713,8 +777,17 @@ document.getElementById('tlBody').innerHTML=STATIONS.map(s=>{
 document.getElementById('tgBody').innerHTML=TARGETS.map(t=>'<div class="scorerow"><div class="l">'+t[0]+'<small>'+t[2]+'</small></div><div class="v" style="color:var(--pink-d)">'+t[1]+'</div></div>').join('');
 document.getElementById('moBody').innerHTML=MONEY.map(m=>m.sec?'<h3 class="gsec">'+m.sec+'</h3>':
   '<div class="schcard"><div class="top"><h4>'+m.n+'</h4><span class="amt">'+m.amt+'</span></div><div class="d">'+m.d+'</div></div>').join('');
-document.getElementById('raBody').innerHTML=RADAR.map(r=>'<div class="opcard"><div class="top"><h4>'+r.n+'</h4>'+
-  '<span class="chip" style="background:'+r.cc+'">'+r.chip+'</span></div><div class="when">'+r.when+'</div><div class="d">'+r.d+'</div></div>').join('');
+{const GNAMES={y1:'This school year · 2026–27',y2:'The applying era · 2027–29',med:'Med school & beyond'};
+ const card=r=>'<div class="opcard"><div class="top"><h4>'+r.n+'</h4>'+
+   '<span class="chip" style="background:'+r.cc+'">'+r.chip+'</span></div><div class="when">'+r.when+'</div><div class="d">'+r.d+'</div></div>';
+ document.getElementById('raBody').innerHTML=['y1','y2','med'].map(g=>
+   '<h3 class="gsec">'+GNAMES[g]+'</h3>'+RADAR.filter(r=>r.g===g).map(card).join('')).join('');
+ // next FIRM deadline banner
+ const now=new Date();const next=RADAR.filter(r=>r.due&&new Date(r.due+'T23:59:59')>now)
+   .sort((a,b)=>a.due.localeCompare(b.due))[0];
+ if(next){const days=Math.ceil((new Date(next.due+'T23:59:59')-now)/864e5);
+   document.getElementById('raNext').innerHTML='<div class="ranext"><div class="dnum">'+days+'<small>DAYS</small></div>'+
+     '<div class="dtxt">Next firm deadline: <b>'+next.n+'</b> — '+next.when.replace('Opens ','').replace('Due ','')+'. Everything below is sorted by when it matters.</div></div>';}}
 document.getElementById('y2Body').innerHTML=YEAR2.map(mo=>{
   const li=x=>{const s=x.startsWith('★ ');return '<li'+(s?' class="star"':'')+'>'+(s?x.slice(2):x)+'</li>';};
   const sec=(lab,arr,cls)=>arr&&arr.length?'<div class="mo2sec '+(cls||'')+'"><span class="mo2lab">'+lab+'</span><ul>'+arr.map(li).join('')+'</ul></div>':'';
