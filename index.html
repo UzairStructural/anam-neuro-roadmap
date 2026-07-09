@@ -218,6 +218,29 @@
   .ri.on{background:#fff;box-shadow:var(--shadow-sm)}
   @media (max-width:980px){#rail{display:none}}
 
+  /* === PROGRESS METER === */
+  .pring{pointer-events:auto;cursor:pointer;position:relative;width:42px;height:42px;flex:none;border:none;background:none;padding:0;margin-left:4px}
+  .pring svg{width:42px;height:42px;transform:rotate(-90deg)}
+  .pring circle{fill:none;stroke-width:4}
+  .pring .bg{stroke:var(--c-surface-tint)}
+  .pring .fg{stroke:var(--c-primary);stroke-linecap:round;stroke-dasharray:94.25;stroke-dashoffset:94.25;transition:stroke-dashoffset .55s cubic-bezier(.2,.8,.2,1)}
+  .pring #pringPct{position:absolute;inset:0;display:grid;place-items:center;font-family:'Manrope';font-weight:800;font-size:11px;color:var(--c-primary-deep)}
+  .pmeter{background:var(--c-surface-tint);border-radius:14px;padding:12px 15px;margin-bottom:14px}
+  .pmeter .pmtop{display:flex;justify-content:space-between;align-items:baseline}
+  .pmeter .pmlab{font-family:'Fraunces';font-size:14px;color:var(--c-ink)}
+  .pmeter .pmpct{font-family:'Fraunces';font-size:22px;color:var(--c-primary-deep)}
+  .pmeter .pmbar{height:12px;border-radius:7px;background:#fff;overflow:hidden;margin:8px 0 6px;box-shadow:inset 0 1px 3px rgba(0,0,0,.06)}
+  .pmeter .pmbar>i{display:block;height:100%;width:0;border-radius:7px;background:linear-gradient(90deg,var(--c-primary-soft),var(--c-primary));transition:width .55s cubic-bezier(.2,.8,.2,1)}
+  .pmeter .pmsub{font-size:12px;font-weight:700;color:var(--c-ink-soft)}
+  .pmeter .pmsub span{color:var(--c-primary-deep)}
+  .pmreset{background:none;border:none;cursor:pointer;color:var(--c-ink-soft);font-family:'Manrope';font-weight:700;font-size:11px;text-decoration:underline;padding:2px}
+  .ck{display:flex;gap:9px;align-items:flex-start;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--c-ink);line-height:1.4;padding:4px 0}
+  .ck input{appearance:none;-webkit-appearance:none;width:17px;height:17px;flex:none;margin:1px 0 0;border:2px solid var(--c-primary-soft);border-radius:6px;cursor:pointer;position:relative;transition:.12s}
+  .ck input:checked{background:var(--c-primary);border-color:var(--c-primary)}
+  .ck input:checked::after{content:"✓";position:absolute;inset:-2px 0 0;color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center}
+  .ck input:checked ~ span{text-decoration:line-through;color:var(--c-ink-soft);opacity:.7}
+  .mo2sec.dl .ck.star{background:var(--c-surface-tint);border-radius:8px;padding:6px 9px;margin:4px 0}
+
   /* serif = display headings only; sans for controls, map labels, numbers */
   .nb,.lab.stn,.lab.spec,.lab.summit,#hud .h b{font-family:'Manrope',system-ui,sans-serif}
   @media (max-width:640px){
@@ -239,7 +262,8 @@
 <nav id="rail" aria-label="Journey steps"><div class="rhead">The journey</div><div id="railList"></div></nav>
 
 <div id="title"><div class="badge"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#fff" d="M10 3.2h4a1 1 0 0 1 1 1V9h4.8a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H15v4.8a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V15H4.2a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1H9V4.2a1 1 0 0 1 1-1Z"/></svg></div>
-  <div><h1 class="fh">Anam's Road to Neurosurgeon</h1><p>the optimized path · future Dr. Oo</p></div></div>
+  <div><h1 class="fh">Anam's Road to Neurosurgeon</h1><p>the optimized path · future Dr. Oo</p></div>
+  <button id="pring" class="pring" title="Your Year-2 progress — tap for this week's actions"><svg viewBox="0 0 42 42"><circle class="bg" cx="21" cy="21" r="15"></circle><circle class="fg" cx="21" cy="21" r="15"></circle></svg><span id="pringPct">0%</span></button></div>
 
 <div id="hud">
   <div class="h" data-tg="1"><b>3.07 → 3.6+</b><span>GPA rescue</span></div>
@@ -259,7 +283,8 @@
     <button class="tab" data-pane="tg">Targets</button>
   </div>
   <div class="tpane on" data-pane="y2">
-    <p class="sub" style="margin:2px 0 12px">Sophomore year — semesters 3 &amp; 4, Aug 2026 → summer 2027. <b style="color:var(--c-warn)">★</b> = hard deadline; miss it and it's gone for a year.</p>
+    <p class="sub" style="margin:2px 0 12px">Sophomore year — semesters 3 &amp; 4, Aug 2026 → summer 2027. <b style="color:var(--c-warn)">★</b> = hard deadline. <b>Check things off as you go</b> — your progress saves on this device.</p>
+    <div class="pmeter"><div class="pmtop"><span class="pmlab">Milestones completed</span><span class="pmpct">0%</span></div><div class="pmbar"><i></i></div><div class="pmsub"></div></div>
     <div id="y2Body"></div>
     <div class="notebox">This is the one year you fully control. Nail the GPA, get into a lab, work the CCMA job, and win one paid research summer — everything after is built on this.</div>
   </div>
@@ -287,9 +312,12 @@
 <div class="modal" id="mNow"><div class="sheet" style="max-width:470px"><button class="x" data-close>✕</button>
   <h2 class="fh">This Week, Anam</h2><p class="sub">Your whole comeback is just the next small action, repeated. Check these off — they save automatically on this device.</p>
   <div class="notebox green" style="margin-bottom:14px">3.07 isn’t the story — the comeback is. The neurosurgery race truly begins in med school; right now it’s simply <b>grades up · one lab · get paid for the clinical hours you’re already certified for.</b></div>
+  <div class="pmeter"><div class="pmtop"><span class="pmlab">Your Year-2 progress</span><span class="pmpct">0%</span></div><div class="pmbar"><i></i></div><div class="pmsub"></div></div>
+  <div style="font-family:'Fraunces';font-size:14px;margin:2px 0 8px;color:var(--c-ink)">Do these first</div>
   <div id="nowList"></div>
   <div id="nowCd" class="cd"></div>
   <div style="text-align:center;margin-top:12px"><button class="nb ra" id="nowRadar" style="display:inline-flex">See every dated deadline →</button></div>
+  <div style="text-align:center;margin-top:10px"><button class="pmreset">Reset my progress</button></div>
 </div></div>
 
 <div id="load"><div style="text-align:center"><div class="ring"></div><p>building your road…</p></div></div>
@@ -788,20 +816,35 @@ document.getElementById('moBody').innerHTML=MONEY.map(m=>m.sec?'<h3 class="gsec"
  if(next){const days=Math.ceil((new Date(next.due+'T23:59:59')-now)/864e5);
    document.getElementById('raNext').innerHTML='<div class="ranext"><div class="dnum">'+days+'<small>DAYS</small></div>'+
      '<div class="dtxt">Next firm deadline: <b>'+next.n+'</b> — '+next.when.replace('Opens ','').replace('Due ','')+'. Everything below is sorted by when it matters.</div></div>';}}
-document.getElementById('y2Body').innerHTML=YEAR2.map(mo=>{
-  const li=x=>{const s=x.startsWith('★ ');return '<li'+(s?' class="star"':'')+'>'+(s?x.slice(2):x)+'</li>';};
-  const sec=(lab,arr,cls)=>arr&&arr.length?'<div class="mo2sec '+(cls||'')+'"><span class="mo2lab">'+lab+'</span><ul>'+arr.map(li).join('')+'</ul></div>':'';
+document.getElementById('y2Body').innerHTML=YEAR2.map((mo,mi)=>{
+  const li=(x,key)=>{const s=x.startsWith('★ ');const t=s?x.slice(2):x;
+    return '<label class="ck'+(s?' star':'')+'"><input type="checkbox" data-k="'+key+'"><span>'+t+'</span></label>';};
+  const sec=(lab,arr,sc)=>arr&&arr.length?'<div class="mo2sec '+(sc==='dl'?'dl':'')+'"><span class="mo2lab">'+lab+'</span>'+
+    arr.map((x,i)=>li(x,'y2_'+mi+'_'+sc+'_'+i)).join('')+'</div>':'';
   return '<div class="mo2card'+(mo.summer?' summer':'')+'"><div class="mo2top"><h4>'+mo.m+
     ' <span style="font-size:11px;color:var(--c-ink-soft);font-weight:700">· '+mo.sem+'</span></h4><span class="sem">'+mo.tag+'</span></div>'+
-    sec('Academics',mo.ac)+sec('Deadlines &amp; money',mo.dl,'dl')+sec('Do this month',mo.ex)+
+    sec('Academics',mo.ac,'ac')+sec('Deadlines &amp; money',mo.dl,'dl')+sec('Do this month',mo.ex,'ex')+
     '<div class="mo2win"><b>Win:</b> '+mo.win+'</div></div>';}).join('');
 
 /* ===== This Week + countdown + first-visit open ===== */
 const LS={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 document.getElementById('nowList').innerHTML=THISWEEK.map(([k,txt])=>
-  '<label class="twrow"><input type="checkbox" data-tw="'+k+'"><span class="twt">'+txt+'</span></label>').join('');
-document.querySelectorAll('#nowList input[data-tw]').forEach(cb=>{const key='tw_'+cb.dataset.tw;
-  cb.checked=LS.get(key)==='1';cb.addEventListener('change',()=>LS.set(key,cb.checked?'1':'0'));});
+  '<label class="ck"><input type="checkbox" data-k="tw_'+k+'"><span>'+txt+'</span></label>').join('');
+/* progress meter — every [data-k] checkbox across This Week + Year-2 is one tracked milestone (saved on this device) */
+function pcopy(p){return p===0?'Every box is a real step — start with one':p<25?"You're moving. Keep the small wins coming":p<50?'Real momentum now':p<75?'Over halfway — this is the comeback':p<100?'So close — finish strong':'Year 2 complete — you did the hard part 🎉';}
+function updateMeter(){const all=document.querySelectorAll('input[data-k]');let done=0;all.forEach(c=>{if(c.checked)done++;});
+  const total=all.length,pct=total?Math.round(done/total*100):0,circ=2*Math.PI*15;
+  const fg=document.querySelector('#pring .fg');if(fg)fg.style.strokeDashoffset=circ*(1-pct/100);
+  const pp=document.getElementById('pringPct');if(pp)pp.textContent=pct+'%';
+  document.querySelectorAll('.pmeter').forEach(m=>{m.querySelector('.pmbar>i').style.width=pct+'%';
+    m.querySelector('.pmpct').textContent=pct+'%';
+    m.querySelector('.pmsub').innerHTML=done+' of '+total+' milestones done &nbsp;·&nbsp; <span>'+pcopy(pct)+'</span>';});}
+document.querySelectorAll('input[data-k]').forEach(cb=>{cb.checked=LS.get(cb.dataset.k)==='1';
+  cb.addEventListener('change',()=>{LS.set(cb.dataset.k,cb.checked?'1':'0');updateMeter();});});
+document.getElementById('pring').onclick=()=>openModal('mNow');
+document.querySelectorAll('.pmreset').forEach(b=>b.onclick=()=>{if(confirm('Reset all checked milestones? This only affects this device.')){
+  document.querySelectorAll('input[data-k]').forEach(cb=>{cb.checked=false;LS.set(cb.dataset.k,'0');});updateMeter();}});
+updateMeter();
 document.getElementById('nowRadar').onclick=()=>{document.getElementById('mNow').classList.remove('show');openModal('mRadar');};
 const dLeft=Math.max(0,Math.ceil((BLITZ-new Date())/864e5));
 document.getElementById('hudDays').textContent=dLeft;
