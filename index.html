@@ -240,6 +240,12 @@
   .ck input:checked::after{content:"✓";position:absolute;inset:-2px 0 0;color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center}
   .ck input:checked ~ span{text-decoration:line-through;color:var(--c-ink-soft);opacity:.7}
   .mo2sec.dl .ck.star{background:var(--c-surface-tint);border-radius:8px;padding:6px 9px;margin:4px 0}
+  /* === CROSS-DEVICE SYNC === */
+  .authrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;background:#fff;border:1.5px solid var(--c-hairline);border-radius:13px;padding:10px 13px;margin-bottom:14px}
+  .authrow #authMsg{font-size:12.5px;font-weight:700;color:var(--c-ink);flex:1;min-width:150px}
+  .authrow #authMsg b{color:var(--c-primary-deep)}
+  .authbtn{border:none;cursor:pointer;font-family:'Manrope';font-weight:800;font-size:12.5px;color:#fff;background:linear-gradient(135deg,var(--c-primary),var(--c-primary-deep));border-radius:11px;padding:9px 15px;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}
+  .authbtn svg{width:15px;height:15px}
 
   /* serif = display headings only; sans for controls, map labels, numbers */
   .nb,.lab.stn,.lab.spec,.lab.summit,#hud .h b{font-family:'Manrope',system-ui,sans-serif}
@@ -313,6 +319,10 @@
   <h2 class="fh">This Week, Anam</h2><p class="sub">Your whole comeback is just the next small action, repeated. Check these off — they save automatically on this device.</p>
   <div class="notebox green" style="margin-bottom:14px">3.07 isn’t the story — the comeback is. The neurosurgery race truly begins in med school; right now it’s simply <b>grades up · one lab · get paid for the clinical hours you’re already certified for.</b></div>
   <div class="pmeter"><div class="pmtop"><span class="pmlab">Your Year-2 progress</span><span class="pmpct">0%</span></div><div class="pmbar"><i></i></div><div class="pmsub"></div></div>
+  <div id="authRow" class="authrow" style="display:none">
+    <span id="authMsg">Sign in to sync your progress across every device — phone, laptop, anywhere.</span>
+    <button id="authBtn" class="authbtn"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#fff" d="M24 9.5c3.9 0 6.6 1.7 8.1 3.1l6-5.8C34.5 3.3 29.8 1 24 1 14.6 1 6.5 6.4 2.6 14.3l7 5.4C11.5 13.7 17.2 9.5 24 9.5z"/><path fill="#fff" d="M46.1 24.5c0-1.6-.1-2.8-.4-4H24v7.6h12.7c-.3 2-1.6 5-4.7 7l7.2 5.6c4.3-4 6.9-9.9 6.9-16.2z"/><path fill="#fff" d="M9.6 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7-5.4C.9 17.1 0 20.4 0 24s.9 6.9 2.6 10.1l7-5.4z"/><path fill="#fff" d="M24 47c6.5 0 11.9-2.1 15.9-5.8l-7.2-5.6c-2 1.3-4.6 2.3-8.7 2.3-6.8 0-12.5-4.2-14.4-10.2l-7 5.4C6.5 41.6 14.6 47 24 47z"/></svg>Sign in with Google</button>
+  </div>
   <div style="font-family:'Fraunces';font-size:14px;margin:2px 0 8px;color:var(--c-ink)">Do these first</div>
   <div id="nowList"></div>
   <div id="nowCd" class="cd"></div>
@@ -336,6 +346,15 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 const V=THREE.Vector3, L=THREE.MathUtils.lerp;
+
+/* ===== OPTIONAL CROSS-DEVICE SYNC (Firebase) ==================================
+   Paste your Firebase web-app config below to switch ON login + real-time sync.
+   These keys are meant to live in client code — security is enforced by Firestore
+   rules (see setup notes). Leave apiKey empty and progress just saves per-device. */
+const FB={
+  apiKey:"", authDomain:"", projectId:"", appId:""
+};
+let cloudSave=null;   /* becomes a fn(key,val) once the user is signed in */
 
 /* ================= 3D PALETTE =================
    Mirrors tokens.css (--stage-*, --sky-*, --summit-gold…). Three.js can't read CSS
@@ -840,7 +859,7 @@ function updateMeter(){const all=document.querySelectorAll('input[data-k]');let 
     m.querySelector('.pmpct').textContent=pct+'%';
     m.querySelector('.pmsub').innerHTML=done+' of '+total+' milestones done &nbsp;·&nbsp; <span>'+pcopy(pct)+'</span>';});}
 document.querySelectorAll('input[data-k]').forEach(cb=>{cb.checked=LS.get(cb.dataset.k)==='1';
-  cb.addEventListener('change',()=>{LS.set(cb.dataset.k,cb.checked?'1':'0');updateMeter();});});
+  cb.addEventListener('change',()=>{const v=cb.checked?'1':'0';LS.set(cb.dataset.k,v);updateMeter();if(cloudSave)cloudSave(cb.dataset.k,v);});});
 document.getElementById('pring').onclick=()=>openModal('mNow');
 document.querySelectorAll('.pmreset').forEach(b=>b.onclick=()=>{if(confirm('Reset all checked milestones? This only affects this device.')){
   document.querySelectorAll('input[data-k]').forEach(cb=>{cb.checked=false;LS.set(cb.dataset.k,'0');});updateMeter();}});
@@ -850,6 +869,38 @@ const dLeft=Math.max(0,Math.ceil((BLITZ-new Date())/864e5));
 document.getElementById('hudDays').textContent=dLeft;
 document.getElementById('nowCd').textContent=dLeft+' days to the January blitz — CRISSP · SHPEP · NIH · SR-EIP · Penn SUIP · Drexel all land Jan–Feb 2027';
 setTimeout(()=>{if(!LS.get('seenNow')){openModal('mNow');LS.set('seenNow','1');}},1000);
+
+/* ===== cross-device sync engine (activates only when FB config is filled) ===== */
+const authRow=document.getElementById('authRow'),authBtn=document.getElementById('authBtn'),authMsg=document.getElementById('authMsg');
+const applyCloud=d=>{document.querySelectorAll('input[data-k]').forEach(cb=>{const on=d[cb.dataset.k]==='1';cb.checked=on;LS.set(cb.dataset.k,on?'1':'0');});updateMeter();};
+async function initCloud(){
+  if(!FB.apiKey){authRow.style.display='none';return;}          // sync off → per-device only
+  authRow.style.display='flex';
+  try{
+    const [{initializeApp},auth_,fs_]=await Promise.all([
+      import('https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js'),
+      import('https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js')]);
+    const {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged}=auth_;
+    const {getFirestore,doc,setDoc,onSnapshot}=fs_;
+    const app=initializeApp(FB),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
+    getRedirectResult(auth).catch(()=>{});
+    authBtn.onclick=()=>{ auth.currentUser ? signOut(auth)
+      : signInWithPopup(auth,provider).catch(()=>signInWithRedirect(auth,provider)); };
+    onAuthStateChanged(auth, async user=>{
+      if(!user){cloudSave=null;authMsg.textContent='Sign in to sync your progress across every device — phone, laptop, anywhere.';
+        authBtn.innerHTML=authBtn.innerHTML.replace(/Sign out/,'Sign in with Google');return;}
+      authMsg.innerHTML='✓ Synced as <b>'+(user.email||'your account')+'</b> — checks now follow you everywhere.';
+      authBtn.textContent='Sign out';
+      const ref=doc(db,'progress',user.uid);
+      const local={};document.querySelectorAll('input[data-k]').forEach(cb=>{if(LS.get(cb.dataset.k)==='1')local[cb.dataset.k]='1';});
+      if(Object.keys(local).length){try{await setDoc(ref,local,{merge:true});}catch(e){}}   // union: never lose local progress
+      cloudSave=(k,v)=>setDoc(ref,{[k]:v},{merge:true}).catch(()=>{});
+      onSnapshot(ref,snap=>applyCloud(snap.exists()?snap.data():{}));                          // live source of truth
+    });
+  }catch(e){authMsg.textContent='Sync is temporarily unavailable — your progress still saves on this device.';authBtn.style.display='none';}
+}
+initCloud();
 
 /* ================= LOOP ================= */
 const tmp=new V(),fwd=new V();const clock=new THREE.Clock();
